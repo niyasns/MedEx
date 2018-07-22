@@ -10,10 +10,6 @@
     <string name="mobile_no">Mobile No</string>
     <string name="blood_group">Blood Group</string>
     <string name="select">Select</string>
-    <string-array name="groups">
-        <item>A+ve</item>
-        <item>A-ve</item>
-        <item>B+ve</item>
-        <item>B-ve</item>
-    </string-array>
+    <string name="district">District</string>
+    <string name="sign_up">SIGN UP</string>
 </resources>
