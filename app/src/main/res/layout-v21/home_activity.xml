@@ -9,7 +9,7 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
+        android:background="@drawable/rectangle_shape"
         android:elevation="2dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -21,7 +21,7 @@
 
         <Button
             android:id="@+id/menu_button"
-            android:layout_width="40dp"
+            android:layout_width="35dp"
             android:layout_height="40dp"
             android:background="@drawable/ic_menu"
             android:layout_marginStart="20dp"
@@ -60,7 +60,8 @@
             android:layout_weight="1.8">
         </FrameLayout>
 
-        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/adView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
