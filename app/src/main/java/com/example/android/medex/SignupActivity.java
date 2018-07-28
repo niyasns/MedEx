@@ -1,6 +1,8 @@
 package com.example.android.medex;
 
+import android.app.DownloadManager;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,23 +16,38 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Arrays;
 
 public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int RC_SIGN_IN = 0;
     private static final String TAG = "SignUpActivity";
+    private static boolean registeredUser= false;
+
     GoogleSignInClient mGoogleSignInClient;
-    Button mSignUpButton;
+    Button mGSignUpButton;
+
+    FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_activity);
 
-        mSignUpButton = findViewById(R.id.g_signup);
+        mGSignUpButton = findViewById(R.id.g_signup);
 
-        mSignUpButton.setOnClickListener(this);
+        db = FirebaseFirestore.getInstance();
+
+        mGSignUpButton.setOnClickListener(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -51,7 +68,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         if(account != null)
         {
-            Toast.makeText(this, "Already Signed up, Please login", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Already Signed up with Google", Toast.LENGTH_LONG).show();
+            mGSignUpButton.setText(getResources().getString(R.string.login_google));
         }
     }
 
@@ -72,7 +90,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void gSignUp() {
-
+        mGSignUpButton.setBackgroundResource(R.drawable.button_text_color_onclick);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -92,14 +110,57 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         try{
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            newUserLoggedIn(account);
+            UserLoggedIn(account);
 
         }catch (ApiException e) {
             Log.w(TAG, "signInResult:failed code = " + e.getStatusCode());
-            newUserLoggedIn(null);
+            UserLoggedIn(null);
         }
     }
 
-    private void newUserLoggedIn(GoogleSignInAccount account) {
+    private void UserLoggedIn(GoogleSignInAccount account) {
+
+        if(account != null) {
+
+
+            CollectionReference usersReference = db.collection("users");
+            Query query = usersReference.whereEqualTo("token", account.getIdToken());
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful())
+                    {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        if(querySnapshot.isEmpty()) {
+                            Log.d(TAG,"New user detected : " + querySnapshot.getDocuments());
+                            registeredUser = false;
+                        } else {
+                            registeredUser = true;
+                        }
+                    } else {
+                        Log.d(TAG, "User query failed", task.getException());
+                    }
+                }
+            });
+
+            if(!registeredUser)
+            {
+                Intent intent = new Intent(SignupActivity.this, SignupDetailActivity.class);
+                intent.putExtra("account", account);
+                startActivity(intent);
+            }
+            else if(registeredUser)
+            {
+                Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
+                intent.putExtra("token", account.getIdToken());
+                startActivity(intent);
+            }
+
+        } else {
+
+            Toast.makeText(this, "Google authentication failed", Toast.LENGTH_LONG).show();
+            mGSignUpButton.setBackgroundResource(R.drawable.button_text_color);
+        }
+
     }
 }

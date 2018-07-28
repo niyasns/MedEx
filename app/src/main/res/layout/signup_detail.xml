@@ -22,7 +22,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.github.florent37.materialtextfield.MaterialTextField
-        android:id="@+id/materialTextField"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -41,6 +40,7 @@
         app:mtf_labelColor="@color/colorSecondary">
 
         <EditText
+            android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:cursorVisible="false"
@@ -69,6 +69,7 @@
         app:mtf_labelColor="@color/colorSecondary">
 
         <EditText
+            android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:cursorVisible="false"
@@ -98,6 +99,7 @@
         app:mtf_labelColor="@color/colorSecondary">
 
         <EditText
+            android:id="@+id/mobileno"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:cursorVisible="false"
@@ -127,6 +129,7 @@
         app:mtf_labelColor="@color/colorSecondary">
 
         <EditText
+            android:id="@+id/district"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:cursorVisible="false"
@@ -168,6 +171,7 @@
             app:mtf_labelColor="@color/colorSecondary">
 
             <EditText
+                android:id="@+id/bloodgroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:cursorVisible="false"
@@ -178,6 +182,7 @@
         </com.github.florent37.materialtextfield.MaterialTextField>
 
         <Button
+            android:id="@+id/sign_up"
             android:layout_width="140dp"
             android:layout_height="55dp"
             android:layout_marginStart="10dp"
