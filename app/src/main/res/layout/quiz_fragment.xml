@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        card_view:cardBackgroundColor="@color/colorTransparentBlack"
+        card_view:cardElevation="1dp"
+        card_view:cardCornerRadius="100dp"
+
+        app:layout_constraintBottom_toBottomOf="@+id/linear_back"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="@+id/linear_back"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.398">
+
+        <at.grabner.circleprogress.CircleProgressView
+            android:id="@+id/circleProgressView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_alignParentTop="false"
+            android:padding="8dp"
+
+            CircleProgressView:cpv_autoTextSize="true"
+            CircleProgressView:cpv_barColor="@color/colorSecondary"
+            CircleProgressView:cpv_barWidth="35dp"
+            CircleProgressView:cpv_fillColor="@color/colorPrimaryDark"
+            CircleProgressView:cpv_innerContourSize="0dp"
+            CircleProgressView:cpv_maxValue="60"
+            CircleProgressView:cpv_outerContourSize="0dp"
+            CircleProgressView:cpv_rimColor="@color/colorPrimary"
+            CircleProgressView:cpv_rimWidth="50dp"
+            CircleProgressView:cpv_seekMode="true"
+            CircleProgressView:cpv_showUnit="true"
+            CircleProgressView:cpv_spinColor="@color/colorPrimaryLight"
+            CircleProgressView:cpv_textColor="@color/colorSecondaryDark"
+            CircleProgressView:cpv_textMode="Value"
+            CircleProgressView:cpv_textScale="1"
+            CircleProgressView:cpv_unit=""
+            CircleProgressView:cpv_unitColor="@color/colorSecondary"
+            CircleProgressView:cpv_unitPosition="bottom"
+            app:cpv_value="20" />
+
+    </android.support.v7.widget.CardView>
+
+
+
+    <LinearLayout
+        android:id="@+id/linear_back"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/background"
+        android:orientation="vertical"
+        android:weightSum="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
+            android:id="@+id/top_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/polygon_shape"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="70dp"
+                android:layout_marginBottom="20dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:padding="8dp"
+                android:text="What is the maximum amount of lead in petrol?"
+                android:textColor="@color/colorWhite"
+                android:gravity="center"
+                android:textSize="24sp"/>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom_view"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/option_1"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:padding="8dp"
+                android:layout_marginTop="80dp"
+                android:text="41 Percentage"
+                android:background="@drawable/rounded_button"
+                android:textColor="@drawable/button_text_color"
+                android:textSize="18sp"
+                android:typeface="monospace" />
+
+            <Button
+                android:id="@+id/option_2"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:padding="8dp"
+                android:layout_marginTop="10dp"
+                android:text="21 Percentage"
+                android:background="@drawable/rounded_button"
+                android:textColor="@drawable/button_text_color"
+                android:textSize="18sp"
+                android:typeface="monospace" />
+
+            <Button
+                android:id="@+id/option_3"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:padding="8dp"
+                android:layout_marginTop="10dp"
+                android:text="80 Percentage"
+                android:background="@drawable/rounded_button"
+                android:textColor="@drawable/button_text_color"
+                android:textSize="18sp"
+                android:typeface="monospace" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

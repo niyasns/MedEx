@@ -27,4 +27,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.github.florent37:materialtextfield:1.0.7'
+    implementation 'com.github.jakob-grabner:Circle-Progress-View:v1.3'
+    implementation 'com.android.support:cardview-v7:26.1.0'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
 }
