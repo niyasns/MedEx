@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/module_card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:padding="8dp"
+    card_view:cardElevation="2dp"
+    card_view:cardBackgroundColor="@color/colorTransparentBlack"
+    card_view:cardCornerRadius="2dp">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Module III : Anatomy"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorSecondary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SubTitle"
+            android:textSize="20sp"
+            android:textColor="@color/colorTransparentWhite" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="22-10-2017"
+            android:textSize="18sp"
+            android:textColor="@color/colorTransparentWhite" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:layout_marginTop="8dp"
+            android:typeface="monospace"
+            android:textStyle="bold"
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/colorSecondary"
+            android:text="Download"/>
+
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

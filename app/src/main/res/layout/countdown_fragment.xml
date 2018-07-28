@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:CircleProgressView="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    android:gravity="center">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:background="@color/colorTransparentBlack">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/next_quiz"
+            android:textSize="30sp"
+            android:typeface="monospace"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@color/colorWhite"/>
+
+        <com.alexfu.countdownview.CountDownView
+            android:id="@+id/countDownView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:textAppearance="@style/countdownText"
+            android:padding="8dp"
+            app:startDuration="6000000"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

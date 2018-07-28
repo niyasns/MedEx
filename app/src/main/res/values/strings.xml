@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">MedEx</string>
+    <string name="login_google">LOGIN WITH GOOGLE</string>
+    <string name="login_facebook">LOGIN WITH FACEBOOK</string>
+    <string name="signup_google">SIGNUP WITH GOOGLE</string>
+    <string name="signup_facebook">SIGNUP WITH FACEBOOK</string>
+    <string name="login">LOGIN</string>
+    <string name="username">User name</string>
+    <string name="email">Email</string>
+    <string name="mobile_no">Mobile No</string>
+    <string name="blood_group">Blood Group</string>
+    <string name="select">Select</string>
+    <string name="district">District</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="lorem">Lorem Ipsum is simply dummy It has survived not only five centuries.
+    Lorem Ipsum is simply dummy It has survived not only five centuries.</string>
+    <string name="next_quiz">Next Quiz in</string>
 </resources>
