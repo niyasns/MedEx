@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/logo_login"
-        android:layout_width="380dp"
-        android:layout_height="255dp"
+        android:layout_width="250dp"
+        android:layout_height="120dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -23,6 +23,7 @@
         app:srcCompat="@drawable/logo_main" android:contentDescription="@string/login" />
 
     <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="72dp"
@@ -42,27 +43,70 @@
             android:layout_width="290dp"
             android:layout_height="60dp"
             android:layout_margin="8dp"
+            android:background="@drawable/rounded_button"
+            android:drawableStart="@drawable/logo_facebook"
             android:padding="10dp"
             android:text="@string/signup_facebook"
-            android:background="@drawable/rounded_button"
             android:textColor="@drawable/button_text_color"
             android:textSize="18sp"
-            android:typeface="monospace"
-            android:drawableStart="@drawable/logo_facebook"/>
+            android:typeface="monospace" />
 
         <Button
             android:id="@+id/f_signup"
             android:layout_width="290dp"
             android:layout_height="60dp"
             android:layout_margin="8dp"
+            android:background="@drawable/rounded_button"
+            android:drawableStart="@drawable/logo_google"
             android:padding="10dp"
             android:text="@string/signup_google"
-            android:background="@drawable/rounded_button"
             android:textColor="@drawable/button_text_color"
             android:textSize="18sp"
-            android:typeface="monospace"
-            android:drawableStart="@drawable/logo_google"/>
+            android:typeface="monospace" />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo_login"
+        app:layout_constraintVertical_bias="0.0">
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/login_subtitle_one"
+            android:textColor="@color/colorSecondary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:typeface="monospace" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
+            android:text="@string/login_subtitle_two"
+            android:textColor="@color/colorSecondary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:typeface="monospace" />
+
+    </LinearLayout>
+
+
 
 </android.support.constraint.ConstraintLayout>
