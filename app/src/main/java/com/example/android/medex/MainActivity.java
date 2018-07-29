@@ -1,5 +1,6 @@
 package com.example.android.medex;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -10,20 +11,20 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager mSlideViewPager;
     private LinearLayout mDotLayout;
     private TextView[] mDots;
     private SliderAdapter sliderAdapter;
-    private Button vLogin;
     private Button vSignup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        vLogin = (Button) findViewById(R.id.view_pager_login);
         vSignup = (Button) findViewById(R.id.view_pager_signup);
 
         mSlideViewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -32,15 +33,6 @@ public class MainActivity extends AppCompatActivity {
         mSlideViewPager.setAdapter(sliderAdapter);
         addDotsIndicator(0);
         mSlideViewPager.addOnPageChangeListener(viewListener);
-
-        vLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                startActivity(intent);
-            }
-        });
 
         vSignup.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +86,5 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
-
 
 }

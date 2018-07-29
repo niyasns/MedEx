@@ -2,6 +2,7 @@ package com.example.android.medex;
 
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import static java.security.AccessController.getContext;
 
 public class SliderAdapter extends PagerAdapter{
 
@@ -34,15 +37,9 @@ public class SliderAdapter extends PagerAdapter{
     };
 
     public String[] slide_descs = {
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the " +
-                    "industry's standard dummy text ever since the 1500s, " +
-                    "when an unknown printer took a galley of type and scrambled it to make a type specimen book",
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the " +
-                    "industry's standard dummy text ever since the 1500s, " +
-                    "when an unknown printer took a galley of type and scrambled it to make a type specimen book",
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the " +
-                    "industry's standard dummy text ever since the 1500s, " +
-                    "when an unknown printer took a galley of type and scrambled it to make a type specimen book",
+            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
     };
 
     @Override
@@ -71,6 +68,9 @@ public class SliderAdapter extends PagerAdapter{
         slideImageView.setImageResource(slide_images[position]);
         slideHeading.setText(slide_headings[position]);
         slideDescription.setText(slide_descs[position]);
+
+        slideHeading.setTypeface(Typeface.createFromAsset(context.getAssets(),"fonts/Raleway-Bold.ttf" ));
+        slideDescription.setTypeface(Typeface.createFromAsset(context.getAssets(),"fonts/Raleway-Regular.ttf" ));
 
         container.addView(view);
 

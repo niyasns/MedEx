@@ -13,4 +13,9 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="TextAppearance.FontPath" parent="android:TextAppearance">
+        <!-- Custom Attr-->
+        <item name="fontPath">fonts/Raleway-Regular.ttf</item>
+    </style>
+
 </resources>
