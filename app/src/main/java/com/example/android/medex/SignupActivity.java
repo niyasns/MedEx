@@ -156,6 +156,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             registeredUser = false;
                         } else {
                             registeredUser = true;
+                            Log.d(TAG,"Registered user detected : " + querySnapshot.getDocuments());
                         }
                     } else {
                         Log.d(TAG, "User query failed", task.getException());
@@ -163,14 +164,14 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 }
             });
 
-            if(!registeredUser)
+            if(registeredUser)
             {
                 Intent intent = new Intent(SignupActivity.this, SignupDetailActivity.class);
                 intent.putExtra("person", person);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
-            else if(registeredUser)
+            else
             {
                 Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
                 intent.putExtra("person", person);

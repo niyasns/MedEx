@@ -48,7 +48,8 @@
             android:textColor="@drawable/button_text_color"
             android:textSize="18sp"
             android:typeface="monospace"
-            android:drawableStart="@drawable/logo_facebook"/>
+            android:drawableStart="@drawable/logo_facebook"
+            android:drawableLeft="@drawable/logo_facebook" />
 
         <Button
             android:id="@+id/f_signin"
@@ -61,7 +62,8 @@
             android:textColor="@drawable/button_text_color"
             android:textSize="18sp"
             android:typeface="monospace"
-            android:drawableStart="@drawable/logo_google"/>
+            android:drawableStart="@drawable/logo_google"
+            android:drawableLeft="@drawable/logo_google" />
 
     </LinearLayout>
 

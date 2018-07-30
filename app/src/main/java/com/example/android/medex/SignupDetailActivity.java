@@ -36,10 +36,10 @@ import java.util.regex.Pattern;
 public class SignupDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "SignUpDetailActivity";
-    private static boolean mobileOk = true;
-    private static boolean emailOk = true;
-    private static boolean groupOk = false;
-    private static boolean districtOk = false;
+    private boolean mobileOk = true;
+    private boolean emailOk = true;
+    private boolean groupOk = false;
+    private boolean districtOk = false;
 
     String[] groups = {"A+", "A-", "B+", "B-", "O+", "O-", "AB-", "AB+" };
     String[] districts = {"Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode",
