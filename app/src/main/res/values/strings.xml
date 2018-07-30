@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">MedEx</string>
-    <string name="login_google">LOGIN WITH GOOGLE</string>
-    <string name="login_facebook">LOGIN WITH FACEBOOK</string>
-    <string name="signup_google">SIGNUP WITH GOOGLE</string>
-    <string name="signup_facebook">SIGNUP WITH FACEBOOK</string>
+    <string name="login_google">GOOGLE LOGIN</string>
+    <string name="login_facebook">FACEBOOK LOGIN</string>
+    <string name="signup_google">GOOGLE SIGNUP</string>
+    <string name="signup_facebook">FACEBOOK SIGNUP</string>
     <string name="login">LOGIN</string>
     <string name="username">User name</string>
     <string name="email">Email</string>
@@ -16,4 +16,5 @@
     <string name="next_quiz">Next Quiz in</string>
     <string name="login_subtitle_one">SFI TMC UNIT</string>
     <string name="login_subtitle_two">Initiative of TMC Academic club</string>
+    <string name="server_client_id">306486938474-ho74saph5pt14kka7p2uchcm9m22o06k.apps.googleusercontent.com</string>
 </resources>

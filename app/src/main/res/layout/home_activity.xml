@@ -40,11 +40,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="HOME"
-                android:textSize="26sp"
+                android:textSize="20sp"
                 android:textColor="@color/colorTransparentWhite"
                 android:typeface="monospace"
                 android:textStyle="bold"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:layout_marginLeft="8dp" />
 
         </LinearLayout>
 
@@ -67,7 +68,8 @@
             android:layout_weight="1.8">
         </FrameLayout>
 
-        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
             android:id="@+id/adView"
             android:layout_width="match_parent"
             android:layout_height="0dp"

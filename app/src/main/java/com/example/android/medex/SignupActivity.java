@@ -2,6 +2,7 @@ package com.example.android.medex;
 
 import android.app.DownloadManager;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -36,6 +38,9 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     GoogleSignInClient mGoogleSignInClient;
     Button mGSignUpButton;
 
+    TextView mSubTitleOne;
+    TextView mSubTitleTwo;
+
     FirebaseFirestore db;
 
     @Override
@@ -44,14 +49,19 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.signup_activity);
 
         mGSignUpButton = findViewById(R.id.g_signup);
+        mSubTitleOne = findViewById(R.id.subTitleOne);
+        mSubTitleTwo = findViewById(R.id.subTitleTwo);
+
+        mSubTitleOne.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Bold.ttf"));
+        mSubTitleTwo.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Regular.ttf"));
 
         db = FirebaseFirestore.getInstance();
 
         mGSignUpButton.setOnClickListener(this);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.server_client_id))
                 .requestEmail()
-                .requestProfile()
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -90,7 +100,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void gSignUp() {
-        mGSignUpButton.setBackgroundResource(R.drawable.button_text_color_onclick);
+        mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_onclick);
+        mGSignUpButton.setTextColor(R.drawable.button_text_color_onclick);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -122,6 +133,15 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         if(account != null) {
 
+            Person person = new Person();
+            person.setPersonId(account.getId());
+            person.setPersonName(account.getDisplayName());
+            person.setPersonEmail(account.getEmail());
+            person.setPersonToken(account.getIdToken());
+            person.setPersonPhoto(account.getPhotoUrl().toString());
+
+
+            Log.d(TAG, person.toString());
 
             CollectionReference usersReference = db.collection("users");
             Query query = usersReference.whereEqualTo("token", account.getIdToken());
@@ -146,20 +166,22 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
             if(!registeredUser)
             {
                 Intent intent = new Intent(SignupActivity.this, SignupDetailActivity.class);
-                intent.putExtra("account", account);
+                intent.putExtra("person", person);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
             else if(registeredUser)
             {
                 Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
-                intent.putExtra("token", account.getIdToken());
+                intent.putExtra("person", person);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
 
         } else {
 
             Toast.makeText(this, "Google authentication failed", Toast.LENGTH_LONG).show();
-            mGSignUpButton.setBackgroundResource(R.drawable.button_text_color);
+            mGSignUpButton.setBackgroundResource(R.drawable.rounded_button);
         }
 
     }
