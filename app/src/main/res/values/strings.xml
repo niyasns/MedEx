@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MedEx</string>
+    <string name="app_name">PRATITI</string>
     <string name="login_google">GOOGLE LOGIN</string>
     <string name="login_facebook">FACEBOOK LOGIN</string>
     <string name="signup_google">GOOGLE SIGNUP</string>
@@ -17,4 +17,6 @@
     <string name="login_subtitle_one">SFI TMC UNIT</string>
     <string name="login_subtitle_two">Initiative of TMC Academic club</string>
     <string name="server_client_id">306486938474-ho74saph5pt14kka7p2uchcm9m22o06k.apps.googleusercontent.com</string>
+    <string name="modules">Modules</string>
+    <string name="home">Home</string>
 </resources>

@@ -2,30 +2,66 @@ package com.example.android.medex;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
+import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
     private ViewPager mSlideViewPager;
     private LinearLayout mDotLayout;
     private TextView[] mDots;
     private SliderAdapter sliderAdapter;
     private Button vSignup;
 
+    private ProgressBar progressBar;
+
+    FirebaseAuth mAuth;
+    FirebaseFirestore db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         vSignup = (Button) findViewById(R.id.view_pager_signup);
+
+        db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
+        mAuth = FirebaseAuth.getInstance();
+
+        progressBar = findViewById(R.id.progressbar);
+        progressBar.setVisibility(View.INVISIBLE);
+
+        Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
+        vSignup.setTypeface(raleway_regular);
 
         mSlideViewPager = (ViewPager) findViewById(R.id.view_pager);
         mDotLayout = (LinearLayout) findViewById(R.id.dots_layout);
@@ -38,9 +74,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(MainActivity.this, SignupActivity.class);
-                startActivity(intent);
-
+                progressBar.setVisibility(View.VISIBLE);
+                vSignup.setBackgroundResource(R.drawable.rounded_button_home_onclick);
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                if (currentUser != null) {
+                    updateUI(currentUser);
+                }else
+                {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Intent intent = new Intent(MainActivity.this, SignupActivity.class);
+                    startActivity(intent);
+                }
             }
         });
 
@@ -54,10 +98,15 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < mDots.length; i++) {
 
             mDots[i] = new TextView(this);
-            mDots[i].setText(Html.fromHtml("&#8226"));
+            if(Build.VERSION.SDK_INT > 24)
+            {
+                mDots[i].setText(Html.fromHtml("&#8226", Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                mDots[i].setText(Html.fromHtml("&#8226"));
+            }
             mDots[i].setTextSize(35);
             mDots[i].setPadding(4,1,4,1);
-            mDots[i].setTextColor(getResources().getColor(R.color.colorTransparentWhite));
+            mDots[i].setTextColor(ContextCompat.getColor(this, R.color.colorTransparentWhite));
 
             mDotLayout.addView(mDots[i]);
         }
@@ -86,5 +135,42 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    private void updateUI(FirebaseUser user) {
+
+        if(user != null)
+        {
+            CollectionReference usersReference = db.collection("users");
+            Query query = usersReference.whereEqualTo("id", user.getUid());
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot queryResult = task.getResult();
+                        if (!queryResult.isEmpty()) {
+                            Log.d(TAG, "Registered user details " + queryResult.getDocuments());
+                            progressBar.setVisibility(View.INVISIBLE);
+                            Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        } else {
+                            Log.d(TAG, "New User found");
+                            progressBar.setVisibility(View.INVISIBLE);
+                            Intent intent = new Intent(MainActivity.this, SignupDetailActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
+                    } else {
+                        Log.d(TAG, "New user check get failed with ", task.getException());
+                    }
+                }
+            });
+
+        } else {
+            progressBar.setVisibility(View.INVISIBLE);
+            Toast.makeText(this, "Google authentication failed", Toast.LENGTH_LONG).show();
+        }
+
+    }
 
 }

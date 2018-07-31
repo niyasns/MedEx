@@ -3,6 +3,7 @@ package com.example.android.medex;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -20,8 +21,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -48,7 +52,6 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     String personName;
     String personEmail;
     String personId;
-    String personToken;
     String personMobile;
     String personDistrict;
     String personBloodGroup;
@@ -67,16 +70,28 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     FirebaseFirestore db;
     Map<String, Object> user;
 
+    FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_detail);
 
-        Intent intent = getIntent();
-        person = (Person) intent.getSerializableExtra("person");
-        extractData(person);
+        Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
 
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
+        mAuth = FirebaseAuth.getInstance();
+
+        userName.setTypeface(raleway_regular);
+        userEmail.setTypeface(raleway_regular);
+        userMobile.setTypeface(raleway_regular);
+        userDistrict.setTypeface(raleway_regular);
+        userBloodGroup.setTypeface(raleway_regular);
+        mSignUp.setTypeface(raleway_regular);
 
         userName = findViewById(R.id.username);
         userEmail = findViewById(R.id.email);
@@ -86,12 +101,20 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         circleImageView = findViewById(R.id.circleImageView);
         mSignUp = findViewById(R.id.sign_up);
 
-        userName.setText(personName);
-        userEmail.setText(personEmail);
-
-        Picasso.get().load(personPhoto).into(circleImageView);
-
         mSignUp.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        userName.setText(currentUser.getDisplayName());
+        userEmail.setText(currentUser.getEmail());
+        Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
+
+        personPhoto = currentUser.getPhotoUrl();
+        personName = currentUser.getDisplayName();
+        personId = currentUser.getUid();
     }
 
     private void addUserDataToFireStore() {
@@ -125,13 +148,12 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
 
         if(mobileOk && emailOk && districtOk && groupOk)
         {
-            person.setPersonEmail(personEmail);
-            person.setPersonMobile(personMobile);
-            person.setPersonBloodGroup(personBloodGroup);
-            person.setPersonDistrict(personDistrict);
+//            person.setPersonEmail(personEmail);
+//            person.setPersonMobile(personMobile);
+//            person.setPersonBloodGroup(personBloodGroup);
+//            person.setPersonDistrict(personDistrict);
 
             user = new HashMap<>();
-            user.put("token", personToken);
             user.put("id", personId);
             user.put("name", personName);
             user.put("mobile", personMobile);
@@ -179,14 +201,6 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    private void extractData(Person person) {
-
-        personName = person.getPersonName();
-        personEmail = person.getPersonEmail();
-        personId = person.getPersonId();
-        personToken = person.getPersonToken();
-        personPhoto = Uri.parse(person.getPersonPhoto());
-    }
 
     @Override
     public void onClick(View v) {

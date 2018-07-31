@@ -10,4 +10,6 @@
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorTransparentWhite">#cccccc</color>
     <color name="colorTransparentBlack">#80000000</color>
+    <color name="colorTransparentSecondaryDark">#80140078</color>
+    <color name="colorTransparentPrimaryLight">#804f5b62</color>
 </resources>

@@ -27,10 +27,10 @@
         CircleProgressView:cpv_seekMode="true"
         CircleProgressView:cpv_showUnit="true"
         CircleProgressView:cpv_spinColor="@color/colorPrimaryLight"
-        CircleProgressView:cpv_textColor="@color/colorSecondaryDark"
+        CircleProgressView:cpv_textColor="@color/colorSecondary"
         CircleProgressView:cpv_textMode="Value"
         CircleProgressView:cpv_textScale="1"
-        CircleProgressView:cpv_unit=""
+        CircleProgressView:cpv_unit="seconds"
         CircleProgressView:cpv_unitColor="@color/colorSecondary"
         CircleProgressView:cpv_unitPosition="bottom"
 
@@ -62,6 +62,7 @@
             android:background="@drawable/polygon_shape">
 
             <TextView
+                android:id="@+id/question"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="70dp"
@@ -70,7 +71,7 @@
                 android:layout_marginEnd="16dp"
                 android:padding="8dp"
                 android:text="What is the maximum amount of lead in petrol?"
-                android:textColor="@color/colorWhite"
+                android:textColor="@color/colorTransparentWhite"
                 android:gravity="center"
                 android:textSize="24sp"/>
 
