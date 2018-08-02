@@ -3,17 +3,25 @@ package com.example.android.medex;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.florent37.materialtextfield.MaterialTextField;
@@ -30,14 +38,17 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 
-public class SignupDetailActivity extends AppCompatActivity implements View.OnClickListener {
+public class SignupDetailActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     private static final String TAG = "SignUpDetailActivity";
     private boolean mobileOk = true;
@@ -45,9 +56,10 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     private boolean groupOk = false;
     private boolean districtOk = false;
 
-    String[] groups = {"A+", "A-", "B+", "B-", "O+", "O-", "AB-", "AB+" };
-    String[] districts = {"Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode",
-            "Malappuram", "Palakkad", "Pathanamthitta", "Thiruvananthapuram", "Thrissur", "Wayanad"};
+    List<String> districts = Arrays.asList("District", "Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode",
+            "Malappuram", "Palakkad", "Pathanamthitta", "Thrissur", "Wayanad", "Trivandrum");
+
+    List<String> groups = Arrays.asList("Blood Group", "A+ve", "A-ve", "B+ve", "B-ve", "O+ve", "O-ve", "AB-ve", "AB+ve");
 
     String personName;
     String personEmail;
@@ -61,23 +73,27 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     EditText userName;
     EditText userEmail;
     EditText userMobile;
-    EditText userDistrict;
-    EditText userBloodGroup;
+    Spinner userDistrict;
+    Spinner userBloodGroup;
+
+    String district;
+    String group;
 
     Button mSignUp;
-    Person person;
 
     FirebaseFirestore db;
     Map<String, Object> user;
 
     FirebaseAuth mAuth;
 
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_detail);
 
-        Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
+        final Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
 
         db = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -86,20 +102,94 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         db.setFirestoreSettings(settings);
         mAuth = FirebaseAuth.getInstance();
 
-        userName.setTypeface(raleway_regular);
-        userEmail.setTypeface(raleway_regular);
-        userMobile.setTypeface(raleway_regular);
-        userDistrict.setTypeface(raleway_regular);
-        userBloodGroup.setTypeface(raleway_regular);
-        mSignUp.setTypeface(raleway_regular);
-
         userName = findViewById(R.id.username);
         userEmail = findViewById(R.id.email);
         userMobile = findViewById(R.id.mobileno);
-        userDistrict = findViewById(R.id.district);
-        userBloodGroup = findViewById(R.id.bloodgroup);
+        userDistrict = findViewById(R.id.placeLayout);
+        userBloodGroup = findViewById(R.id.groupLayout);
         circleImageView = findViewById(R.id.circleImageView);
         mSignUp = findViewById(R.id.sign_up);
+        progressBar = findViewById(R.id.progressbar);
+
+        userDistrict.setOnItemSelectedListener(this);
+        userBloodGroup.setOnItemSelectedListener(this);
+
+        ArrayAdapter<String> districtAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, districts){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v =  super.getView(position, convertView, parent);
+                ((TextView) v).setTypeface(raleway_regular);
+                return v;
+            }
+
+            @Override
+            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                if(position == 0)
+                {
+                    //Future update
+                }
+                return view;
+            }
+
+            @Override
+            public boolean isEnabled(int position) {
+                if(position == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        };
+
+        districtAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        userDistrict.setAdapter(districtAdapter);
+
+        ArrayAdapter<String> groupAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, groups){
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v =  super.getView(position, convertView, parent);
+                ((TextView) v).setTypeface(raleway_regular);
+                return v;
+            }
+
+            @Override
+            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                if(position == 0)
+                {
+                    //Future update
+                }
+                return view;
+            }
+
+            @Override
+            public boolean isEnabled(int position) {
+                if(position == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        };
+
+        groupAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        userBloodGroup.setAdapter(groupAdapter);
+
+        progressBar.setVisibility(View.INVISIBLE);
+
+        userName.setTypeface(raleway_regular);
+        userEmail.setTypeface(raleway_regular);
+        userMobile.setTypeface(raleway_regular);
+        mSignUp.setTypeface(raleway_regular);
 
         mSignUp.setOnClickListener(this);
     }
@@ -119,48 +209,53 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
 
     private void addUserDataToFireStore() {
 
+        progressBar.setVisibility(View.VISIBLE);
+
         personEmail = userEmail.getText().toString().trim();
         personMobile = userMobile.getText().toString().trim();
-        personBloodGroup = userBloodGroup.getText().toString().trim();
-        personDistrict = userDistrict.getText().toString().trim();
+        personBloodGroup = group;
+        personDistrict = district;
 
         if(personMobile.length() != 10)
         {
+            Log.d(TAG, "Mobile not ok" + mobileOk);
             mobileOk = false;
+        } else {
+            mobileOk = true;
         }
 
         if(!validEmail(personEmail))
         {
             emailOk = false;
+        } else {
+            emailOk = true;
         }
 
-        String District = personDistrict.substring(0, 1).toUpperCase() + personDistrict.substring(1).toLowerCase();
 
-        if(Arrays.asList(districts).contains(District)){
+        if(!personDistrict.equals("District")){
             districtOk = true;
+        } else {
+            districtOk = false;
         }
 
-        String Blood = personBloodGroup.substring(0,1).toUpperCase() + personBloodGroup.substring(1);
-
-        if(Arrays.asList(groups).contains(Blood)) {
+        if(!personBloodGroup.equals("Blood Group")) {
             groupOk = true;
+        } else {
+            groupOk = false;
         }
 
         if(mobileOk && emailOk && districtOk && groupOk)
         {
-//            person.setPersonEmail(personEmail);
-//            person.setPersonMobile(personMobile);
-//            person.setPersonBloodGroup(personBloodGroup);
-//            person.setPersonDistrict(personDistrict);
 
             user = new HashMap<>();
             user.put("id", personId);
             user.put("name", personName);
             user.put("mobile", personMobile);
             user.put("email", personEmail);
-            user.put("district", District);
-            user.put("blood", Blood);
+            user.put("district", personDistrict);
+            user.put("blood", personBloodGroup);
             user.put("pic", personPhoto.toString());
+            user.put("source","google");
 
             db.collection("users")
                     .add(user)
@@ -168,6 +263,7 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
                             Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                            progressBar.setVisibility(View.INVISIBLE);
                             Intent intent = new Intent(SignupDetailActivity.this, HomeActivity.class);
                             intent.putExtra("docId", documentReference.getId());
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -178,6 +274,7 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Log.w(TAG, "Error adding document", e);
+                            progressBar.setVisibility(View.INVISIBLE);
                             mSignUp.setBackgroundResource(R.drawable.button_text_color);
                             Toast.makeText(SignupDetailActivity.this, "Sign up Failed, Try Again", Toast.LENGTH_LONG).show();
                         }
@@ -185,19 +282,23 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         }
         else if (!mobileOk)
         {
+            progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(this, "Enter 10 digit mobile number", Toast.LENGTH_SHORT).show();
         }
         else if (!emailOk)
         {
+            progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(this, "Enter valid email", Toast.LENGTH_SHORT).show();
         }
         else if (!districtOk)
         {
-            Toast.makeText(this, District + " is not a district in kerala", Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.INVISIBLE);
+            Toast.makeText(this, personDistrict + " is not accepted", Toast.LENGTH_SHORT).show();
         }
         else if (!groupOk)
         {
-            Toast.makeText(this, Blood + " is not accepted ( A+, B+ , ..)", Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.INVISIBLE);
+            Toast.makeText(this, personBloodGroup + " is not accepted", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -214,5 +315,24 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     private boolean validEmail(String email) {
         Pattern pattern = Patterns.EMAIL_ADDRESS;
         return pattern.matcher(email).matches();
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        switch (parent.getId())
+        {
+            case R.id.placeLayout:
+                district = parent.getItemAtPosition(position).toString().trim();
+                break;
+            case R.id.groupLayout:
+                group = parent.getItemAtPosition(position).toString().trim();
+                break;
+        }
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

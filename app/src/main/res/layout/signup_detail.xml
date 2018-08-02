@@ -28,10 +28,11 @@
             android:id="@+id/circleImageView"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="3dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
+            android:layout_centerHorizontal="true"
             android:src="@drawable/logo_main"
             app:civ_border_color="@color/colorSecondary"
             app:civ_border_width="1dp" />
@@ -40,10 +41,10 @@
             android:id="@+id/usernameLayout"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="4dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="2dp"
             android:layout_below="@+id/circleImageView"
             app:mtf_backgroundColor="@color/colorTransparentPrimaryLight"
             app:mtf_cardCollapsedHeight="2dp"
@@ -56,6 +57,7 @@
                 android:layout_height="wrap_content"
                 android:cursorVisible="false"
                 android:hint="@string/username"
+                android:focusable="false"
                 android:textColor="@color/colorTransparentWhite"
                 android:textSize="18sp" />
 
@@ -65,10 +67,10 @@
             android:id="@+id/emailLayout"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="4dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="2dp"
             android:layout_below="@+id/usernameLayout"
             app:mtf_backgroundColor="@color/colorTransparentPrimaryLight"
             app:mtf_cardCollapsedHeight="2dp"
@@ -81,6 +83,7 @@
                 android:layout_height="wrap_content"
                 android:cursorVisible="false"
                 android:hint="@string/email"
+                android:focusable="false"
                 android:textColor="@color/colorTransparentWhite"
                 android:textSize="18sp" />
 
@@ -90,10 +93,10 @@
             android:id="@+id/mobileLayout"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="4dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="2dp"
             android:layout_below="@+id/emailLayout"
             app:mtf_backgroundColor="@color/colorTransparentPrimaryLight"
             app:mtf_cardCollapsedHeight="2dp"
@@ -106,80 +109,70 @@
                 android:layout_height="wrap_content"
                 android:cursorVisible="false"
                 android:hint="@string/mobile_no"
+                android:maxLines="1"
                 android:inputType="phone"
                 android:textColor="@color/colorTransparentWhite"
                 android:textSize="18sp" />
 
         </com.github.florent37.materialtextfield.MaterialTextField>
 
-        <com.github.florent37.materialtextfield.MaterialTextField
-            android:id="@+id/placeLayout"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_below="@+id/mobileLayout"
-            app:mtf_backgroundColor="@color/colorTransparentPrimaryLight"
-            app:mtf_cardCollapsedHeight="2dp"
-            app:mtf_image="@drawable/place_logo"
-            app:mtf_labelColor="@color/colorTransparentWhite">
 
-            <EditText
-                android:id="@+id/district"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:cursorVisible="false"
-                android:hint="@string/district"
-                android:textColor="@color/colorTransparentWhite"
-                android:textSize="18sp" />
 
-        </com.github.florent37.materialtextfield.MaterialTextField>
 
 
         <LinearLayout
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginStart="6dp"
-            android:gravity="center_horizontal"
+            android:layout_marginBottom="4dp"
             android:layout_marginTop="8dp"
-            android:layout_below="@+id/placeLayout"
-            android:orientation="horizontal">
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_below="@+id/mobileLayout"
+            android:orientation="vertical">
 
-            <com.github.florent37.materialtextfield.MaterialTextField
-                android:layout_width="140dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
-                app:mtf_backgroundColor="@color/colorTransparentPrimaryLight"
-                app:mtf_cardCollapsedHeight="2dp"
-                app:mtf_image="@drawable/blood_logo"
-                app:mtf_labelColor="@color/colorTransparentWhite">
+                android:orientation="horizontal"
+                android:weightSum="2">
 
-                <EditText
-                    android:id="@+id/bloodgroup"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:cursorVisible="false"
-                    android:hint="@string/blood_group"
-                    android:textColor="@color/colorTransparentWhite"
-                    android:textSize="18sp" />
+                <Spinner
+                    android:id="@+id/placeLayout"
+                    android:layout_width="300dp"
+                    android:layout_height="55dp"
+                    android:background="@drawable/rounded_button"
+                    android:tooltipText="District"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_weight=".9"
+                    android:layout_marginRight="4dp">
+                </Spinner>
 
-            </com.github.florent37.materialtextfield.MaterialTextField>
+                <Spinner
+                    android:id="@+id/groupLayout"
+                    android:layout_width="300dp"
+                    android:layout_height="55dp"
+                    android:background="@drawable/rounded_button"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_weight="1.1"
+                    android:layout_marginLeft="4dp">
+                </Spinner>
+
+            </LinearLayout>
+
 
             <Button
                 android:id="@+id/sign_up"
-                android:layout_width="140dp"
+                android:layout_width="match_parent"
                 android:layout_height="55dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="33dp"
-                android:textSize="20sp"
+                android:layout_marginTop="6dp"
+                android:textSize="22sp"
                 android:background="@drawable/rounded_button"
                 android:text="@string/sign_up"
-                android:textColor="@drawable/button_text_color" />
+                android:textColor="@drawable/button_text_color"/>
 
         </LinearLayout>
 
