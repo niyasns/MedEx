@@ -21,18 +21,15 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:layout_gravity="center">
+        android:gravity="center">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/circleImageView"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginBottom="3dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_centerHorizontal="true"
+            android:layout_marginStart="8dp"
             android:src="@drawable/logo_main"
             app:civ_border_color="@color/colorSecondary"
             app:civ_border_width="1dp" />
@@ -138,26 +135,26 @@
 
                 <Spinner
                     android:id="@+id/placeLayout"
-                    android:layout_width="300dp"
+                    android:layout_width="0dp"
                     android:layout_height="55dp"
                     android:background="@drawable/rounded_button"
                     android:tooltipText="District"
                     android:layout_marginBottom="4dp"
                     android:layout_marginEnd="3dp"
                     android:layout_marginTop="2dp"
-                    android:layout_weight=".9"
+                    android:layout_weight="1.1"
                     android:layout_marginRight="4dp">
                 </Spinner>
 
                 <Spinner
                     android:id="@+id/groupLayout"
-                    android:layout_width="300dp"
+                    android:layout_width="0dp"
                     android:layout_height="55dp"
                     android:background="@drawable/rounded_button"
                     android:layout_marginBottom="4dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginStart="2dp"
-                    android:layout_weight="1.1"
+                    android:layout_weight=".9"
                     android:layout_marginLeft="4dp">
                 </Spinner>
 
