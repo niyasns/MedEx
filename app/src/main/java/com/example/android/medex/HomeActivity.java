@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.special.ResideMenu.ResideMenu;
@@ -16,12 +17,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ResideMenu resideMenu;
 
     ResideMenuItem itemHome;
+    ResideMenuItem itemQuiz;
     ResideMenuItem itemModule;
     ResideMenuItem itemProfile;
     ResideMenuItem itemCredits;
     ResideMenuItem itemLogout;
 
     TextView heading;
+
+    ProgressBar progressBar;
 
     private HomeActivity mContext;
 
@@ -30,13 +34,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_activity);
         mContext = this;
+        progressBar = findViewById(R.id.progressbarHome);
+        progressBar.setVisibility(View.INVISIBLE);
         Typeface raleway_bold = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
         heading = findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
         setupMenu();
         if (savedInstanceState == null) {
-            changeFragment(new QuizFragment());
+            changeFragment(new HomeFragment());
         }
     }
 
@@ -49,18 +55,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
 
         itemHome = new ResideMenuItem(this, R.drawable.ic_home, "Home");
+        itemQuiz = new ResideMenuItem(this, R.drawable.ic_quiz, "Quiz");
         itemModule = new ResideMenuItem(this, R.drawable.ic_module, "Modules");
         itemProfile = new ResideMenuItem(this, R.drawable.ic_profile, "Profile");
         itemCredits = new ResideMenuItem(this, R.drawable.ic_credits, "Credits");
         itemLogout = new ResideMenuItem(this, R.drawable.ic_logout, "Logout");
 
         itemHome.setOnClickListener(this);
+        itemQuiz.setOnClickListener(this);
         itemModule.setOnClickListener(this);
         itemProfile.setOnClickListener(this);
         itemCredits.setOnClickListener(this);
         itemLogout.setOnClickListener(this);
 
         resideMenu.addMenuItem(itemHome, ResideMenu.DIRECTION_LEFT);
+        resideMenu.addMenuItem(itemQuiz, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemModule, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemProfile, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemCredits, ResideMenu.DIRECTION_LEFT);
@@ -83,9 +92,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
 
         if (v == itemHome) {
+            changeFragment(new HomeFragment());
+        } else if(v == itemQuiz) {
             changeFragment(new QuizFragment());
         } else if (v == itemModule) {
-            changeFragment(new CountDownFragment());
+            changeFragment(new ModuleFragment());
         } else if (v == itemProfile) {
 
         } else if (v == itemCredits) {

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeFragment"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/background">
+
+    <Button
+        android:id="@+id/quiz"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="Quiz"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"
+        android:textColor="@color/colorTransparentWhite"
+        android:background="@drawable/rounded_button"/>
+    <Button
+        android:id="@+id/modules"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="Modules"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"
+        android:textColor="@color/colorTransparentWhite"
+        android:background="@drawable/rounded_button"/>
+    <Button
+        android:id="@+id/profile"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="Profile"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"
+        android:textColor="@color/colorTransparentWhite"
+        android:background="@drawable/rounded_button"/>
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="Logout"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:layout_margin="8dp"
+        android:layout_gravity="center"
+        android:textColor="@color/colorTransparentWhite"
+        android:background="@drawable/rounded_button"/>
+
+
+</LinearLayout>

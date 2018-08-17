@@ -36,7 +36,7 @@
             CircleProgressView:cpv_outerContourSize="0dp"
             CircleProgressView:cpv_rimColor="@color/colorPrimary"
             CircleProgressView:cpv_rimWidth="50dp"
-            CircleProgressView:cpv_seekMode="true"
+            CircleProgressView:cpv_seekMode="false"
             CircleProgressView:cpv_showUnit="true"
             CircleProgressView:cpv_spinColor="@color/colorPrimaryLight"
             CircleProgressView:cpv_textColor="@color/colorSecondary"

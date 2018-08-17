@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:padding="8dp"
+    android:padding="12dp"
     card_view:cardElevation="2dp"
     card_view:cardBackgroundColor="@color/colorTransparentBlack"
     card_view:cardCornerRadius="2dp">
@@ -19,6 +19,7 @@
         android:layout_margin="8dp">
 
         <TextView
+            android:id="@+id/title_item"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Module III : Anatomy"
@@ -27,6 +28,7 @@
             android:textColor="@color/colorSecondary" />
 
         <TextView
+            android:id="@+id/subtitle_item"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="SubTitle"
@@ -34,6 +36,15 @@
             android:textColor="@color/colorTransparentWhite" />
 
         <TextView
+            android:id="@+id/type_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="type"
+            android:textSize="18sp"
+            android:textColor="@color/colorTransparentWhite" />
+
+        <TextView
+            android:id="@+id/time_item"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="22-10-2017"
@@ -41,6 +52,7 @@
             android:textColor="@color/colorTransparentWhite" />
 
         <Button
+            android:id="@+id/download_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="20sp"
