@@ -2,18 +2,37 @@ package com.example.android.medex;
 
 import android.app.Fragment;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.special.ResideMenu.ResideMenu;
 import com.special.ResideMenu.ResideMenuItem;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private static final String TAG = "HomeActivity - Firebase";
     ResideMenu resideMenu;
 
     ResideMenuItem itemHome;
@@ -27,23 +46,79 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     ProgressBar progressBar;
 
+    List<QuizSet> quizSets;
+
+    CurrentQuiz currentQuiz;
+
+    FirebaseFirestore db;
+
     private HomeActivity mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_activity);
+        db = FirebaseFirestore.getInstance();
         mContext = this;
         progressBar = findViewById(R.id.progressbarHome);
-        progressBar.setVisibility(View.INVISIBLE);
         Typeface raleway_bold = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
         heading = findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
+        setupFirebase();
         setupMenu();
+        progressBar.setVisibility(View.INVISIBLE);
         if (savedInstanceState == null) {
             changeFragment(new HomeFragment());
         }
+    }
+
+    private void setupFirebase() {
+
+        firebaseLoadQuizSet(db);
+
+        final DocumentReference documentReference = db.collection("config").document("currentQuiz");
+        documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if(e != null) {
+                    Log.w(TAG, "Listen Failed");
+                    return;
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    Log.d(TAG, "Current data: " + documentSnapshot.getData());
+                    currentQuiz = documentSnapshot.toObject(CurrentQuiz.class);
+                } else {
+                    Log.d(TAG, "Current data: null");
+                }
+
+            }
+        });
+
+    }
+
+    private void firebaseLoadQuizSet(FirebaseFirestore db) {
+
+        final CollectionReference quizRef = db.collection("quizes");
+        quizSets = new ArrayList<>();
+        quizRef.whereEqualTo("completed", false)
+                .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(10)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Log.d(TAG, document.getId() + " => " + document.getData());
+                        QuizSet quizSet = document.toObject(QuizSet.class);
+                        quizSets.add(quizSet);
+                        Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
+                    }
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
     }
 
 
@@ -119,8 +194,27 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         fragmentTransaction.commit();
     }
 
+    public void checkStatus() {
+
+        if (currentQuiz.qNo == -1) {
+
+            changeFragment(new CountDownFragment());
+        } else {
+            firebaseLoadQuizSet(db);
+            changeFragment(new CountDownFragment());
+        }
+    }
+
     public ResideMenu getResideMenu() {
         return resideMenu;
+    }
+
+    public List getQuizList() {
+        return quizSets;
+    }
+
+    public CurrentQuiz getCurrentQuiz() {
+        return currentQuiz;
     }
 }
 

@@ -32,8 +32,6 @@ import org.w3c.dom.Text;
 import java.net.URL;
 import java.util.ArrayList;
 
-import io.fabric.sdk.android.services.network.UrlUtils;
-
 public class ModuleFragment extends android.app.Fragment {
 
     private View parentView;

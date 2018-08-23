@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:padding="8dp"
+    android:layout_gravity="center"
+    android:background="@drawable/rounded_dailog"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/dailog_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Wrong Answer"
+        android:layout_margin="5dp"
+        android:textColor="@color/colorTransparentWhite"
+        android:textSize="26sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/dailog_subheading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="5dp"
+        android:text="See you next time"
+        android:textColor="@color/colorTransparentWhite"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+
+    <Button
+        android:id="@+id/btn_close"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:background="@drawable/rounded_button"
+        android:clickable="true"
+        android:layout_margin="5dp"
+        android:text="Close"
+        android:layout_gravity="center"
+        android:textColor="@color/colorSecondary"
+        android:textStyle="bold" />
+
+</LinearLayout>

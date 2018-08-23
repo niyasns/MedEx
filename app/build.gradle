@@ -70,8 +70,6 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:2.2.0'
     implementation 'com.specyci:residemenu:1.6+'
 
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
-
 
 }
 apply plugin: 'com.google.gms.google-services'

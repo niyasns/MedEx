@@ -9,12 +9,20 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.alexfu.countdownview.CountDownView;
 import com.special.ResideMenu.ResideMenu;
+
+import java.sql.Time;
+import java.util.Date;
 
 public class CountDownFragment extends Fragment {
 
     private View parentView;
     private ResideMenu resideMenu;
+
+    CountDownView countDownView;
+
+    Time nextQuiz;
 
     public CountDownFragment() {
         // Required empty public constructor
@@ -35,11 +43,18 @@ public class CountDownFragment extends Fragment {
         heading.setText(R.string.home);
         resideMenu = parentActivity.getResideMenu();
 
+        countDownView = parentView.findViewById(R.id.countDownView);
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 resideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
             }
         });
+    }
+
+    public void getCurrentTime() {
+
+
     }
 }
