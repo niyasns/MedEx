@@ -1,7 +1,10 @@
 package com.example.android.medex;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -33,7 +36,7 @@ import javax.annotation.Nullable;
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "HomeActivity - Firebase";
-    ResideMenu resideMenu;
+    static ResideMenu resideMenu;
 
     ResideMenuItem itemHome;
     ResideMenuItem itemQuiz;
@@ -44,13 +47,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     TextView heading;
 
-    ProgressBar progressBar;
+    static ProgressBar progressBar;
 
-    List<QuizSet> quizSets;
+    static List<QuizSet> quizSets;
 
-    CurrentQuiz currentQuiz;
+    static FirebaseFirestore db;
 
-    FirebaseFirestore db;
+    static FragmentManager fragMan;
+    static Fragment frg;
 
     private HomeActivity mContext;
 
@@ -65,51 +69,65 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
         heading = findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
-        setupFirebase();
+        frg = null;
+        fragMan = getFragmentManager();
+        quizSets = new ArrayList<>();
         setupMenu();
-        progressBar.setVisibility(View.INVISIBLE);
+        setupFirebase();
         if (savedInstanceState == null) {
             changeFragment(new HomeFragment());
         }
+
+        findViewById(R.id.menu_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
+            }
+        });
+    }
+
+    static private void setupNavigation() {
+
+        resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
     }
 
     private void setupFirebase() {
 
-        firebaseLoadQuizSet(db);
+        new QuizSetLoadAsync().execute();
 
-        final DocumentReference documentReference = db.collection("config").document("currentQuiz");
-        documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        final CollectionReference quizRef = db.collection("quizes");
+
+        quizRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 if(e != null) {
                     Log.w(TAG, "Listen Failed");
                     return;
                 }
 
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-                    Log.d(TAG, "Current data: " + documentSnapshot.getData());
-                    currentQuiz = documentSnapshot.toObject(CurrentQuiz.class);
+                if (queryDocumentSnapshots != null) {
+                    Log.d(TAG, "Quiz set Changed");
+                    new QuizSetLoadAsync().execute();
+
                 } else {
                     Log.d(TAG, "Current data: null");
                 }
-
             }
         });
 
     }
 
-    private void firebaseLoadQuizSet(FirebaseFirestore db) {
+    static private void firebaseLoadQuizSet(FirebaseFirestore db) {
 
         final CollectionReference quizRef = db.collection("quizes");
-        quizSets = new ArrayList<>();
-        quizRef.whereEqualTo("completed", false)
+        quizSets.clear();
+        quizRef.whereEqualTo("started", false)
                 .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(10)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        Log.d(TAG, document.getId() + " => " + document.getData());
                         QuizSet quizSet = document.toObject(QuizSet.class);
                         quizSets.add(quizSet);
                         Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
@@ -127,7 +145,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         resideMenu = new ResideMenu(this);
         resideMenu.setBackground(R.drawable.reside_background);
         resideMenu.attachToActivity(this);
-        resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
 
         itemHome = new ResideMenuItem(this, R.drawable.ic_home, "Home");
         itemQuiz = new ResideMenuItem(this, R.drawable.ic_quiz, "Quiz");
@@ -149,13 +166,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         resideMenu.addMenuItem(itemProfile, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemCredits, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemLogout, ResideMenu.DIRECTION_LEFT);
-
-        findViewById(R.id.menu_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
-            }
-        });
     }
 
     @Override
@@ -169,7 +179,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if (v == itemHome) {
             changeFragment(new HomeFragment());
         } else if(v == itemQuiz) {
-            changeFragment(new QuizFragment());
+            changeFragment(new CountDownFragment());
         } else if (v == itemModule) {
             changeFragment(new ModuleFragment());
         } else if (v == itemProfile) {
@@ -186,22 +196,37 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void changeFragment(Fragment targetFragment) {
 
         resideMenu.clearIgnoredViewList();
-
-        android.app.FragmentManager fragmentManager = getFragmentManager();
-        android.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.add(R.id.frame_window, targetFragment);
+        fragmentTransaction.replace(R.id.frame_window, targetFragment);
         fragmentTransaction.commit();
     }
 
-    public void checkStatus() {
+    static class QuizSetLoadAsync extends AsyncTask<Void, Void, Void> {
 
-        if (currentQuiz.qNo == -1) {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setVisibility(View.VISIBLE);
+        }
 
-            changeFragment(new CountDownFragment());
-        } else {
+        @Override
+        protected Void doInBackground(Void... voids) {
             firebaseLoadQuizSet(db);
-            changeFragment(new CountDownFragment());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            setupNavigation();
+            progressBar.setVisibility(View.INVISIBLE);
+            frg = fragMan.findFragmentById(R.id.frame_window);
+            final FragmentTransaction ft = fragMan.beginTransaction();
+            ft.detach(frg);
+            ft.attach(frg);
+            ft.commit();
         }
     }
 
@@ -213,8 +238,5 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         return quizSets;
     }
 
-    public CurrentQuiz getCurrentQuiz() {
-        return currentQuiz;
-    }
 }
 

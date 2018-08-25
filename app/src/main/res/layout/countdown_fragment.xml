@@ -33,8 +33,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
             android:textAppearance="@style/countdownText"
-            android:padding="8dp"
-            app:startDuration="6000000"/>
+            android:padding="8dp" />
 
     </RelativeLayout>
 
