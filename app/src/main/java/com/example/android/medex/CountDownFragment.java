@@ -3,6 +3,7 @@ package com.example.android.medex;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
@@ -40,6 +41,7 @@ public class CountDownFragment extends Fragment {
     private ResideMenu resideMenu;
 
     CountDownView countDownView;
+    TextView quizCountText;
 
     Date nextQuiz;
     Date current;
@@ -63,17 +65,25 @@ public class CountDownFragment extends Fragment {
         setupViews();
         setFirebaseListner();
         setQuiz();
-        getCurrentTime();
         return parentView;
     }
 
     private void setupViews() {
         parentActivity = (HomeActivity) getActivity();
+        Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
+        Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
         Button button = parentActivity.findViewById(R.id.menu_button);
         TextView heading = parentActivity.findViewById(R.id.heading);
-        heading.setText(R.string.home);
+        heading.setText("Quiz");
         resideMenu = parentActivity.getResideMenu();
+
         countDownView = parentView.findViewById(R.id.countDownView);
+        quizCountText = parentView.findViewById(R.id.quizTitle);
+
+        heading.setTypeface(raleway_bold);
+        quizCountText.setTypeface(raleway_regular);
+        quizCountText.setTextSize(30);
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,13 +108,18 @@ public class CountDownFragment extends Fragment {
                             return;
                         }
 
-                        for (QueryDocumentSnapshot doc : value) {
-                            if (doc.get("scheduledTime") != null) {
-                                Timestamp timestamp = doc.getTimestamp("scheduledTime");
-                                nextQuiz = timestamp.toDate();
-                                Log.d("Quiz time changed", nextQuiz.toString());
-                                getCurrentTime();
+                        if (value != null) {
+                            for (QueryDocumentSnapshot doc : value) {
+                                if (doc.get("scheduledTime") != null) {
+                                    Timestamp timestamp = doc.getTimestamp("scheduledTime");
+                                    nextQuiz = timestamp.toDate();
+                                    Log.d("Quiz time changed", nextQuiz.toString());
+                                    getCurrentTime();
+                                }
                             }
+                        } else {
+                            countDownView.setVisibility(View.INVISIBLE);
+                            quizCountText.setText("No Quizes Found");
                         }
                     }
                 });
@@ -113,7 +128,14 @@ public class CountDownFragment extends Fragment {
     private void setQuiz() {
 
         QuizList = parentActivity.getQuizList();
-        quizSet = (QuizSet) QuizList.get(0);
+        if(QuizList.isEmpty()) {
+            countDownView.setVisibility(View.INVISIBLE);
+            quizCountText.setText("No Data Found");
+            quizCountText.setTextSize(24);
+        } else {
+            quizSet = (QuizSet) QuizList.get(0);
+            getCurrentTime();
+        }
     }
 
     private void getCurrentTime() {
@@ -149,9 +171,15 @@ public class CountDownFragment extends Fragment {
 
                 long total = (elapsedHours * 60 * 60000) + (elapsedMinutes * 60000) + ((elapsedSeconds) * 1000);
 
-                countDownView.reset();
-                countDownView.setStartDuration(total);
-                countDownView.start();
+                if(total < 0) {
+                    countDownView.setVisibility(View.INVISIBLE);
+                    quizCountText.setText("No Data Found");
+                    quizCountText.setTextSize(24);
+                } else {
+                    countDownView.reset();
+                    countDownView.setStartDuration(total);
+                    countDownView.start();
+                }
             }
         });
     }

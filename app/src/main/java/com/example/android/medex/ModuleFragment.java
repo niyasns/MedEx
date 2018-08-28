@@ -10,10 +10,12 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,18 +34,23 @@ import org.w3c.dom.Text;
 import java.net.URL;
 import java.util.ArrayList;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 public class ModuleFragment extends android.app.Fragment {
 
     private View parentView;
     private ResideMenu resideMenu;
 
     private TextView heading;
+    private TextView no_data;
 
     ProgressBar progressBar;
 
     private FirebaseFirestore db;
     private FirebaseStorage storage;
     RecyclerView recyclerView;
+    FrameLayout frameLayout;
 
     ArrayList<Module> moduleArrayList;
 
@@ -90,8 +97,13 @@ public class ModuleFragment extends android.app.Fragment {
 
                         progressBar.setVisibility(View.INVISIBLE);
 
-                        moduleRecyclerAdapter = new ModuleRecyclerAdapter(ModuleFragment.this, moduleArrayList, storage, progressBar);
-                        recyclerView.setAdapter(moduleRecyclerAdapter);
+                        if(moduleArrayList.isEmpty()) {
+                            recyclerView.setVisibility(View.INVISIBLE);
+                            frameLayout.addView(no_data);
+                        } else {
+                            moduleRecyclerAdapter = new ModuleRecyclerAdapter(ModuleFragment.this, moduleArrayList, storage, progressBar);
+                            recyclerView.setAdapter(moduleRecyclerAdapter);
+                        }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -127,6 +139,14 @@ public class ModuleFragment extends android.app.Fragment {
         heading.setText(R.string.modules);
 
         progressBar = parentActivity.findViewById(R.id.progressbarHome);
+        frameLayout = parentView.findViewById(R.id.recycle_frame);
+
+        no_data = new TextView(parentActivity);
+        no_data.setText("No data found");
+        no_data.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
+        no_data.setTypeface(raleway_regular);
+        no_data.setTextSize(24);
+        no_data.setGravity(Gravity.CENTER);
 
         resideMenu = parentActivity.getResideMenu();
         button.setOnClickListener(new View.OnClickListener() {

@@ -81,7 +81,6 @@
                 android:layout_marginEnd="16dp"
                 android:padding="8dp"
                 android:textAlignment="center"
-                android:text="What is the maximum amount of lead in petrol?"
                 android:textColor="@color/colorTransparentWhite"
                 android:gravity="center"
                 android:textSize="24sp"/>
@@ -98,8 +97,9 @@
 
             <Button
                 android:id="@+id/option_1"
-                android:layout_width="250dp"
+                android:layout_width="wrap_content"
                 android:layout_height="50dp"
+                android:minWidth="250dp"
                 android:padding="8dp"
                 android:layout_marginTop="80dp"
                 android:text="41 Percentage"
@@ -110,8 +110,9 @@
 
             <Button
                 android:id="@+id/option_2"
-                android:layout_width="250dp"
+                android:layout_width="wrap_content"
                 android:layout_height="50dp"
+                android:minWidth="250dp"
                 android:padding="8dp"
                 android:layout_marginTop="10dp"
                 android:text="21 Percentage"
@@ -122,8 +123,9 @@
 
             <Button
                 android:id="@+id/option_3"
-                android:layout_width="250dp"
+                android:layout_width="wrap_content"
                 android:layout_height="50dp"
+                android:minWidth="250dp"
                 android:padding="8dp"
                 android:layout_marginTop="10dp"
                 android:text="80 Percentage"

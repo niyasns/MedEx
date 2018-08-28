@@ -1,12 +1,14 @@
 package com.example.android.medex;
 
+import android.content.Intent;
+
 import java.util.HashMap;
 import java.util.List;
 
 class Question {
 
     String question;
-    Integer timeOut;
+    String timeOut;
     List<String> options;
     String answer;
 
@@ -14,7 +16,7 @@ class Question {
 
     }
 
-    public Question(String question, Integer timeOut, List<String> options, String answer, HashMap<String, Boolean> responses) {
+    public Question(String question, String timeOut, List<String> options, String answer, HashMap<String, Boolean> responses) {
         this.question = question;
         this.timeOut = timeOut;
         this.options = options;
@@ -30,10 +32,10 @@ class Question {
     }
 
     public Integer getTimeOut() {
-        return timeOut;
+        return Integer.parseInt(timeOut);
     }
 
-    public void setTimeOut(Integer timeOut) {
+    public void setTimeOut(String timeOut) {
         this.timeOut = timeOut;
     }
 

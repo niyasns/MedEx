@@ -86,10 +86,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
     }
 
     private void readUserDetails() {
-
-        FirebaseUser firebaseUser = mAuth.getCurrentUser();
-        String userId = firebaseUser.getUid();
-        Log.d(TAG, userId);
+        userId = mAuth.getUid();
         db.collection("users")
                 .whereEqualTo("id", userId)
                 .limit(1)
@@ -137,7 +134,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
 
         heading = parentActivity.findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
-        heading.setText(R.string.modules);
+        heading.setText(R.string.profile);
 
         progressBar = parentActivity.findViewById(R.id.progressbarHome);
 

@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -60,6 +62,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private HomeActivity mContext;
 
+    private AdView mAdview;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +76,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         heading = findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
         quizSets = new ArrayList<>();
+        mAdview = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        mAdview.loadAd(adRequest);
         setupMenu();
         setupFirebase();
         if (savedInstanceState == null) {
@@ -247,7 +255,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.add(R.id.frame_window, targetFragment);
+        fragmentTransaction.replace(R.id.frame_window, targetFragment);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
