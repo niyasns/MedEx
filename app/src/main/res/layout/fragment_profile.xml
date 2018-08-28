@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/circleImageViewFrag"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/logo_main"
+            app:civ_border_color="@color/colorSecondary"
+            app:civ_border_width="1dp"
+            android:layout_marginLeft="8dp" />
+
+
+        <EditText
+            android:id="@+id/usernameFrag"
+            android:layout_width="300dp"
+            android:layout_height="55dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="8dp"
+            android:cursorVisible="false"
+            android:hint="@string/username"
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/colorTransparentWhite"
+            android:textSize="18sp"/>
+
+        <EditText
+            android:id="@+id/emailFrag"
+            android:layout_width="300dp"
+            android:layout_height="55dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="8dp"
+            android:cursorVisible="false"
+            android:hint="@string/email"
+            android:focusable="false"
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/colorTransparentWhite"
+            android:textSize="18sp" />
+
+
+        <EditText
+            android:id="@+id/mobilenoFrag"
+            android:layout_width="300dp"
+            android:layout_height="55dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="8dp"
+            android:cursorVisible="false"
+            android:hint="@string/mobile_no"
+            android:maxLines="1"
+            android:inputType="phone"
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/colorTransparentWhite"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_below="@+id/mobilenoFrag"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <Spinner
+                    android:id="@+id/placeLayoutFrag"
+                    android:layout_width="0dp"
+                    android:layout_height="55dp"
+                    android:background="@drawable/rounded_button"
+                    android:tooltipText="District"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_weight="1.1"
+                    android:layout_marginRight="4dp">
+                </Spinner>
+
+                <Spinner
+                    android:id="@+id/groupLayoutFrag"
+                    android:layout_width="0dp"
+                    android:layout_height="55dp"
+                    android:background="@drawable/rounded_button"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_weight=".9"
+                    android:layout_marginLeft="4dp">
+                </Spinner>
+
+            </LinearLayout>
+
+
+            <Button
+                android:id="@+id/edit_user_frag"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:layout_marginTop="6dp"
+                android:textSize="22sp"
+                android:background="@drawable/rounded_button"
+                android:text="@string/update"
+                android:textColor="@drawable/button_text_color"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

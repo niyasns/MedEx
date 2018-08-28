@@ -2,6 +2,7 @@ package com.example.android.medex;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -45,9 +46,10 @@ public class CompleteDialog extends Dialog implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         dismiss();
-        Intent intent = new Intent(mActivity, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        mActivity.startActivity(intent);
+        mActivity.getFragmentManager().popBackStackImmediate();
+        FragmentTransaction fragmentTransaction = mActivity.getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
+        fragmentTransaction.commit();
     }
 
     @Override

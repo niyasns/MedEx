@@ -263,11 +263,26 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
                             Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                            progressBar.setVisibility(View.INVISIBLE);
-                            Intent intent = new Intent(SignupDetailActivity.this, HomeActivity.class);
-                            intent.putExtra("docId", documentReference.getId());
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
+                            db.collection("users").document(documentReference.getId())
+                                    .update("userId", documentReference.getId())
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                            Intent intent = new Intent(SignupDetailActivity.this, HomeActivity.class);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            startActivity(intent);
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.w(TAG, "Error adding document id", e);
+                                            progressBar.setVisibility(View.INVISIBLE);
+                                            mSignUp.setBackgroundResource(R.drawable.button_text_color);
+                                            Toast.makeText(SignupDetailActivity.this, "Sign up Failed, Try Again", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

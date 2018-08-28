@@ -125,7 +125,6 @@ public class CountDownFragment extends Fragment {
                 long timestamp = (long) httpsCallableResult.getData();
                 current = new Date(timestamp);
                 Log.w("Current Time", current.toString());
-                nextQuiz = quizSet.getScheduledTime().toDate();
                 Log.w("Next Quiz Time", nextQuiz.toString());
 
                 long different = nextQuiz.getTime() - current.getTime();

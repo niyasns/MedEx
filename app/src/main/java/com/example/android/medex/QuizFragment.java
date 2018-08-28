@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -22,7 +27,9 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.special.ResideMenu.ResideMenu;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import at.grabner.circleprogress.CircleProgressView;
 
@@ -39,8 +46,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     TextView heading;
     TextView question;
 
-    static Integer counter;
-    static Integer progress;
+    Integer progress;
     Runnable r;
     Integer total_questions;
     Boolean isCorrect;
@@ -61,9 +67,17 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     CompleteDialog completeDialog;
 
     FirebaseFirestore db;
+    FirebaseAuth mAuth;
     Integer currentQue;
 
     List QuizList;
+
+    ArrayList<String> answers;
+    String quiz_id;
+    Timestamp created_at;
+    String user_id;
+
+    Boolean is_fragment_visible;
 
     public QuizFragment() {
         // Required empty public constructor
@@ -74,9 +88,38 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         parentView = inflater.inflate(R.layout.quiz_fragment, container, false);
         setupViews();
+        return parentView;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth = FirebaseAuth.getInstance();
         setupQuiz();
         setupFirebaseRealtimeListner();
-        return parentView;
+        setupResponse();
+    }
+
+    private void setupResponse() {
+
+        answers = new ArrayList<>();
+        quiz_id = quizSet.getQuizId();
+        user_id = mAuth.getUid();
+        created_at = quizSet.getScheduledTime();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        is_fragment_visible = false;
+        Log.d("QuizFragement", "Quiz fragement destroyed");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        is_fragment_visible = false;
+        Log.d("QuizFragement", "Quiz fragement stopped");
     }
 
     private void setupFirebaseRealtimeListner() {
@@ -93,43 +136,82 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                     return;
                 }
 
-                if (documentSnapshot != null && documentSnapshot.exists()) {
+                if (documentSnapshot != null && documentSnapshot.exists() && is_fragment_visible.equals(true)) {
                     Log.d(TAG, "Current data: " + documentSnapshot.getData());
-                    currentQue = (Integer) documentSnapshot.get("qNo");
-                    correctDialog.dismiss();
-                    changeQuestion(currentQue);
+                    if(isCorrect) {
+                        Long temp = documentSnapshot.getLong("qNo");
+                        if (temp != null) {
+                            currentQue = temp.intValue();
+                        }
+                        if(correctDialog.isShowing()) {
+                            correctDialog.dismiss();
+                        }
+                        if(temp != -1 && isCorrect.equals(true)) {
+                            changeQuestion(currentQue);
+                        }
+                    }
                 } else {
                     Log.d(TAG, "Current data: null");
                 }
-
             }
         });
+    }
 
+    private void sendResponse(final Boolean isComplete) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("answers", answers);
+        response.put("createdAt", created_at);
+        response.put("quizId", quiz_id);
+        response.put("userId", user_id);
+
+        db.collection("responses").add(response)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
+                        if(isComplete) {
+                            completeDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            completeDialog.show();
+                        } else {
+                            wrongDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            wrongDialog.show();
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
     }
 
     private void setupQuiz() {
 
-        counter = 0;
         progress = 0;
         userResponse = new ArrayList<>();
+        pAnswer = "null";
         isCorrect = true;
         QuizList = parentActivity.getQuizList();
         quizSet = (QuizSet) QuizList.get(0);
         questionList = quizSet.getQuestions();
         total_questions = questionList.size();
         circleProgressView.setMaxValue(quizSet.getTimeOut());
+        circleProgressView.setValue(0);
 
         countDownTimer = new CountDownTimer(quizSet.getTimeOut() * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 progress++;
-                circleProgressView.setValue(progress);
+                circleProgressView.setValue(quizSet.getTimeOut() - (millisUntilFinished / 1000));
             }
 
             @Override
             public void onFinish() {
                 Log.d("QuizFragment", "count down finished");
                 circleProgressView.setValue(quizSet.getTimeOut());
+                countDownTimer.cancel();
             }
         };
 
@@ -140,18 +222,20 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
             public void onProgressChanged(float value) {
                 if(value == quizSet.getTimeOut()) {
                     Log.d("QuizFragment", "onprogresscahnged entered");
-                    if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && (counter < total_questions)) {
-                        correctDialog = new CorrectDialog(parentActivity);
+                    if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
+                        isCorrect = false;
+                        Log.d("Current value:", (currentQue.toString()));
+                        answers.add(pAnswer);
+                        sendResponse(false);
+                    } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
+                        Log.d("Current value:", (currentQue.toString()));
+                        answers.add(pAnswer);
                         correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         correctDialog.show();
-                    }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && (counter.equals(total_questions))) {
-                        completeDialog = new CompleteDialog(parentActivity);
-                        completeDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        completeDialog.show();
-                    } else {
-                        wrongDialog = new WrongDialog(parentActivity);
-                        wrongDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        wrongDialog.show();
+                    }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
+                        Log.d("Current value:", (currentQue.toString()));
+                        answers.add(pAnswer);
+                        sendResponse(true);
                     }
                 }
             }
@@ -165,6 +249,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     public void changeQuestion(Integer currentQue) {
         Log.d("QuizFragment", "change fragment entered");
         progress = 0;
+        isCorrect = true;
         if(currentQue < total_questions) {
             resetButton();
             enableButton();
@@ -179,6 +264,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     }
 
     private void setupViews() {
+        is_fragment_visible = true;
         Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
         parentActivity = (HomeActivity) getActivity();
@@ -197,6 +283,9 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         question.setTypeface(raleway_regular);
 
         resideMenu = parentActivity.getResideMenu();
+        correctDialog = new CorrectDialog(parentActivity);
+        completeDialog = new CompleteDialog(parentActivity);
+        wrongDialog = new WrongDialog(parentActivity);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
