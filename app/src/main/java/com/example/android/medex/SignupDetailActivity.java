@@ -78,6 +78,7 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
 
     String district;
     String group;
+    String source;
 
     Button mSignUp;
 
@@ -92,7 +93,11 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup_detail);
-
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if(bundle != null) {
+            source = (String) bundle.get("source");
+        }
         final Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
 
         db = FirebaseFirestore.getInstance();
@@ -255,7 +260,7 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
             user.put("district", personDistrict);
             user.put("blood", personBloodGroup);
             user.put("pic", personPhoto.toString());
-            user.put("source","google");
+            user.put("source",source);
 
             db.collection("users")
                     .add(user)

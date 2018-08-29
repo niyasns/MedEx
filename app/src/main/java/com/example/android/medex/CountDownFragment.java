@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alexfu.countdownview.CountDownView;
@@ -51,6 +52,7 @@ public class CountDownFragment extends Fragment {
     List<Question> questionList;
 
     FirebaseFirestore db;
+    ProgressBar progressBar;
 
     List QuizList;
 
@@ -74,6 +76,8 @@ public class CountDownFragment extends Fragment {
         Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
         Button button = parentActivity.findViewById(R.id.menu_button);
         TextView heading = parentActivity.findViewById(R.id.heading);
+        progressBar = parentActivity.findViewById(R.id.progressbarHome);
+        progressBar.setVisibility(View.VISIBLE);
         heading.setText("Quiz");
         resideMenu = parentActivity.getResideMenu();
 
@@ -170,6 +174,8 @@ public class CountDownFragment extends Fragment {
                 elapsedHours = elapsedHours + (elapsedDays * 24);
 
                 long total = (elapsedHours * 60 * 60000) + (elapsedMinutes * 60000) + ((elapsedSeconds) * 1000);
+
+                progressBar.setVisibility(View.INVISIBLE);
 
                 if(total < 0) {
                     countDownView.setVisibility(View.INVISIBLE);
