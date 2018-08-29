@@ -63,6 +63,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
 
     String docId;
 
+
     ArrayAdapter<String> districtAdapter;
     ArrayAdapter<String> groupAdapter;
 
@@ -79,8 +80,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         parentView = inflater.inflate(R.layout.fragment_profile, container, false);
-        setupFirebase();
         setupViews();
+        setupFirebase();
         readUserDetails();
         return parentView;
     }
@@ -97,6 +98,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d(TAG, "User details read complete" + document.getData());
+                                progressBar.setVisibility(View.INVISIBLE);
                                 userName.setText(document.getString("name"));
                                 userMobile.setText(document.getString("mobile"));
                                 userEmail.setText(document.getString("email"));
@@ -110,11 +112,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
                                 Picasso.get().load(document.getString("pic")).into(circleImageView);
                             }
                         } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                        if (task.isSuccessful()) {
-
-                        } else {
+                            progressBar.setVisibility(View.INVISIBLE);
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
@@ -137,6 +135,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
         heading.setText(R.string.profile);
 
         progressBar = parentActivity.findViewById(R.id.progressbarHome);
+        progressBar.setVisibility(View.VISIBLE);
 
         update = parentView.findViewById(R.id.edit_user_frag);
         update.setOnClickListener(this);
@@ -238,6 +237,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
     @Override
     public void onClick(View v) {
         Map<String, Object> userData = new HashMap<>();
+        progressBar.setVisibility(View.VISIBLE);
         userData.put("name", userName.getText().toString().trim());
         userData.put("mobile", userMobile.getText().toString().trim());
         userData.put("district", district.trim());
@@ -252,6 +252,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "DocumentSnapshot successfully updated!");
+                        progressBar.setVisibility(View.INVISIBLE);
                         Toast.makeText(parentView.getContext(), "User details updated", Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -259,6 +260,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error updating document", e);
+                        progressBar.setVisibility(View.INVISIBLE);
                         Toast.makeText(parentView.getContext(), "User details update failed. Try again", Toast.LENGTH_SHORT).show();
                     }
                 });

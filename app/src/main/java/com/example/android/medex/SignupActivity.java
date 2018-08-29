@@ -15,6 +15,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -23,6 +31,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -31,6 +40,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.Arrays;
 
 public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -50,6 +61,10 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
     ProgressBar progressBar;
 
+    private CallbackManager callbackManager;
+    LoginManager loginManager;
+    private static final String EMAIL = "email";
+
     FirebaseFirestore db;
     FirebaseAuth mAuth;
 
@@ -59,8 +74,12 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         setContentView(R.layout.signup_activity);
 
+        callbackManager = CallbackManager.Factory.create();
+        loginManager = LoginManager.getInstance();
+
         mGSignUpButton = findViewById(R.id.g_signup);
         mFSignUpButton = findViewById(R.id.f_signup);
+
 
         mSubTitleOne = findViewById(R.id.subTitleOne);
         mSubTitleTwo = findViewById(R.id.subTitleTwo);
@@ -75,6 +94,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         mGSignUpButton.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Regular.ttf"));
 
         mGSignUpButton.setOnClickListener(this);
+        mFSignUpButton.setOnClickListener(this);
 
         db = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -128,6 +148,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 activeNetwork = conMgr.getActiveNetworkInfo();
                 if(activeNetwork != null && activeNetwork.isConnected())
                 {
+                    Log.d(TAG,"Logging with facebook");
                     fSignUp();
                 }
                 else
@@ -139,10 +160,61 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void fSignUp() {
+
+        progressBar.setVisibility(View.VISIBLE);
+        mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
+        mFSignUpButton.setTextColor(R.drawable.button_text_color_home_onclick);
+        mFSignUpButton.setEnabled(false);
+        loginManager.logInWithReadPermissions(SignupActivity.this, Arrays.asList("email", "public_profile"));
+        loginManager.registerCallback(callbackManager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                        if(AccessToken.getCurrentAccessToken() != null) {
+                            handleFacebookAccessToken(loginResult.getAccessToken());
+                        }
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        Log.d(TAG, "facebook:onCancel");
+                    }
+
+                    @Override
+                    public void onError(FacebookException error) {
+                        Log.d(TAG, "facebook:onError", error);
+                    }
+                });
+
+    }
+
+    private void handleFacebookAccessToken(AccessToken accessToken) {
+        Log.d(TAG, "handleFacebookAccessToken:" + accessToken);
+        AuthCredential credential = FacebookAuthProvider.getCredential(accessToken.getToken());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()) {
+                            mFSignUpButton.setEnabled(true);
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                        } else {
+                            mFSignUpButton.setEnabled(true);
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(SignupActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+                });
     }
 
     private void gSignUp() {
         progressBar.setVisibility(View.VISIBLE);
+        mGSignUpButton.setEnabled(false);
         mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
         mGSignUpButton.setTextColor(R.drawable.button_text_color_home_onclick);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
@@ -163,6 +235,9 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 Log.w(TAG, "Google Sign in failed: signInResult:failed code = " + e);
                 updateUI(null);
             }
+        } else {
+
+            callbackManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 
