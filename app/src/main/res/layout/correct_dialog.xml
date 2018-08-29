@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="220dp"
+    android:layout_height="290dp"
     android:layout_margin="10dp"
     android:padding="8dp"
     android:layout_gravity="center"
+    android:gravity="center"
     android:background="@drawable/rounded_dailog"
     android:orientation="vertical" >
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/dialog_checked"
+        android:layout_gravity="center"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -14,7 +21,7 @@
         android:layout_gravity="center"
         android:text="Correct Answer"
         android:layout_margin="5dp"
-        android:textColor="@color/colorTransparentWhite"
+        android:textColor="@color/colorGreen"
         android:textSize="26sp"
         android:textStyle="bold"/>
 
@@ -23,9 +30,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="5dp"
+        android:gravity="center"
         android:text="Wait for next question"
         android:textColor="@color/colorTransparentWhite"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textStyle="bold"/>
 
 

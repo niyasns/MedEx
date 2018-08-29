@@ -179,7 +179,11 @@ public class CountDownFragment extends Fragment {
 
                 if(total < 0) {
                     countDownView.setVisibility(View.INVISIBLE);
-                    quizCountText.setText("No Data Found");
+                    quizCountText.setText("Initiating quiz");
+                    quizCountText.setTextSize(24);
+                } else if(total == 0) {
+                    countDownView.setVisibility(View.INVISIBLE);
+                    quizCountText.setText("No data available");
                     quizCountText.setTextSize(24);
                 } else {
                     countDownView.reset();

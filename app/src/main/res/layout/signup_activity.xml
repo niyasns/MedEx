@@ -17,7 +17,7 @@
         android:layout_marginTop="-7dp"
         android:backgroundTint="@color/colorTransparentBlack"
         android:layout_alignParentTop="true"
-        android:indeterminateTint="@color/colorSecondaryDark"/>
+        android:indeterminateTint="@color/colorTransparentWhite"/>
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"

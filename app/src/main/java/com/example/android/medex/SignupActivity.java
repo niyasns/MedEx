@@ -73,7 +73,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.signup_activity);
-
+        db = FirebaseFirestore.getInstance();
         callbackManager = CallbackManager.Factory.create();
         loginManager = LoginManager.getInstance();
 
@@ -96,7 +96,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         mGSignUpButton.setOnClickListener(this);
         mFSignUpButton.setOnClickListener(this);
 
-        db = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setTimestampsInSnapshotsEnabled(true)
                 .build();
@@ -180,11 +179,21 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                     @Override
                     public void onCancel() {
                         Log.d(TAG, "facebook:onCancel");
+                        progressBar.setVisibility(View.INVISIBLE);
+                        mFSignUpButton.setEnabled(true);
+                        mGSignUpButton.setEnabled(true);
+                        mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                        mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                     }
 
                     @Override
                     public void onError(FacebookException error) {
                         Log.d(TAG, "facebook:onError", error);
+                        progressBar.setVisibility(View.INVISIBLE);
+                        mFSignUpButton.setEnabled(true);
+                        mGSignUpButton.setEnabled(true);
+                        mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                        mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                     }
                 });
 
@@ -235,6 +244,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
             }catch (Exception e) {
                 mFSignUpButton.setEnabled(true);
                 mGSignUpButton.setEnabled(true);
+                mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                 Log.w(TAG, "Google Sign in failed: signInResult:failed code = " + e);
                 Toast.makeText(this, "Please update google play services", Toast.LENGTH_LONG).show();
             }
