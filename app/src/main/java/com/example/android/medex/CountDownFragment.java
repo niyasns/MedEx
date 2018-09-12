@@ -194,7 +194,7 @@ public class CountDownFragment extends Fragment {
                     }
                 } else {
                     progressBar.setVisibility(View.INVISIBLE);
-                    Toast.makeText(parentActivity, "Error on getting data", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(parentActivity, "Check after some time", Toast.LENGTH_SHORT).show();
                     countDownView.setVisibility(View.INVISIBLE);
                     quizCountText.setText("No data available");
                     quizCountText.setTextSize(24);
