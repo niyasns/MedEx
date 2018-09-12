@@ -41,21 +41,18 @@ public class CountDownFragment extends Fragment {
     private static final String TAG = "CountDown Firebase";
     private View parentView;
     private ResideMenu resideMenu;
+    private HomeActivity parentActivity;
 
     CountDownView countDownView;
     TextView quizCountText;
-
     Date nextQuiz;
     Date current;
 
-    private HomeActivity parentActivity;
     QuizSet quizSet;
-    List<Question> questionList;
+    List QuizList;
 
     FirebaseFirestore db;
     ProgressBar progressBar;
-
-    List QuizList;
 
     public CountDownFragment() {
         // Required empty public constructor
@@ -72,9 +69,11 @@ public class CountDownFragment extends Fragment {
     }
 
     private void setupViews() {
+
         parentActivity = (HomeActivity) getActivity();
         Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
+
         Button button = parentActivity.findViewById(R.id.menu_button);
         TextView heading = parentActivity.findViewById(R.id.heading);
         progressBar = parentActivity.findViewById(R.id.progressbarHome);
@@ -96,7 +95,7 @@ public class CountDownFragment extends Fragment {
             }
         });
     }
-
+    /* Firebase listener for listening change in quiz set */
     private void setFirebaseListner() {
         db = FirebaseFirestore.getInstance();
 
@@ -129,7 +128,7 @@ public class CountDownFragment extends Fragment {
                     }
                 });
     }
-
+    /* Setting count down timer for next quiz */
     private void setQuiz() {
 
         QuizList = parentActivity.getQuizList();
@@ -143,7 +142,7 @@ public class CountDownFragment extends Fragment {
             getCurrentTime();
         }
     }
-
+    /* getting current server time using firebase callable functions */
     private void getCurrentTime() {
 
         FirebaseFunctions.getInstance().getHttpsCallable("getTime")
@@ -182,11 +181,11 @@ public class CountDownFragment extends Fragment {
 
                     if(total < 0) {
                         countDownView.setVisibility(View.INVISIBLE);
-                        quizCountText.setText("No data available");
+                        quizCountText.setText("No data found");
                         quizCountText.setTextSize(24);
                     } else if(total == 0) {
                         countDownView.setVisibility(View.INVISIBLE);
-                        quizCountText.setText("No data available");
+                        quizCountText.setText("No data found");
                         quizCountText.setTextSize(24);
                     } else {
                         countDownView.reset();

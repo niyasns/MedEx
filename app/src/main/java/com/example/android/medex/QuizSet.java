@@ -4,14 +4,15 @@ import com.google.firebase.Timestamp;
 
 import java.util.List;
 
+/* Quiz set model */
 class QuizSet {
 
-    boolean completed;
-    boolean started;
-    List<Question> questions;
-    String quizId;
-    Timestamp scheduledTime;
-    Integer timeOut;
+    private boolean completed;
+    private boolean started;
+    private List<Question> questions;
+    private String quizId;
+    private Timestamp scheduledTime;
+    private Integer timeOut;
     String title;
 
     public QuizSet()

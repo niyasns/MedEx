@@ -29,11 +29,18 @@ import java.util.zip.CheckedOutputStream;
 
 public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder> {
 
-    ModuleFragment moduleFragment;
-    ArrayList<Module> moduleArrayList;
-    FirebaseStorage storage;
-    ProgressBar progressBar;
+    private ModuleFragment moduleFragment;
+    private ArrayList<Module> moduleArrayList;
+    private FirebaseStorage storage;
+    private ProgressBar progressBar;
 
+    /**
+     * ModuleRecyclerAdapter Constructor
+     * @param moduleFragment fragment instance
+     * @param moduleArrayList Array list of data
+     * @param storage firebase storage instacne
+     * @param progressBar progress bar instance
+     */
     public ModuleRecyclerAdapter(ModuleFragment moduleFragment, ArrayList<Module> moduleArrayList, FirebaseStorage storage,
                                  ProgressBar progressBar) {
         this.moduleFragment = moduleFragment;
@@ -80,6 +87,10 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
 
     }
 
+    /**
+     * download file
+     * @param position position of the file clicked for download.
+     */
     private void downloadFile(final int position) {
 
         progressBar.setVisibility(View.VISIBLE);
@@ -114,7 +125,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         private ProgressBar progressBar;
         private Context mContext;
 
-        public DownloadFileFromURL (Context context, ProgressBar progressBar){
+        DownloadFileFromURL(Context context, ProgressBar progressBar){
             this.mContext = context;
             this.progressBar = progressBar;
         }

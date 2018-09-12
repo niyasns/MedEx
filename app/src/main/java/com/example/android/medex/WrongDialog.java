@@ -18,6 +18,7 @@ import android.widget.Button;
 
 import java.util.List;
 
+/* Dialog for wrong answer */
 public class WrongDialog extends Dialog implements View.OnClickListener {
 
     Activity mActivity;
@@ -26,14 +27,6 @@ public class WrongDialog extends Dialog implements View.OnClickListener {
     public WrongDialog(@NonNull Activity activity) {
         super(activity);
         this.mActivity = activity;
-    }
-
-    public WrongDialog(@NonNull Context context, int themeResId) {
-        super(context, themeResId);
-    }
-
-    protected WrongDialog(@NonNull Context context, boolean cancelable, @Nullable OnCancelListener cancelListener) {
-        super(context, cancelable, cancelListener);
     }
 
     @Override
@@ -52,15 +45,5 @@ public class WrongDialog extends Dialog implements View.OnClickListener {
         FragmentTransaction fragmentTransaction = mActivity.getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
         fragmentTransaction.commit();
-    }
-
-    @Override
-    public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, @Nullable Menu menu, int deviceId) {
-
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-
     }
 }

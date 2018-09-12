@@ -4,12 +4,12 @@ import android.content.Intent;
 
 import java.util.HashMap;
 import java.util.List;
-
+/* Question model */
 class Question {
 
     String question;
-    List<String> options;
-    String answer;
+    private List<String> options;
+    private String answer;
 
     public Question() {
 

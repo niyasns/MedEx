@@ -4,6 +4,9 @@ import com.google.firebase.Timestamp;
 
 import java.sql.Time;
 
+/**
+ * Class to represent module data.
+ */
 public class Module {
 
     String fileId;

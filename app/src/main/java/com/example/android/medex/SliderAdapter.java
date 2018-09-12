@@ -23,19 +23,19 @@ public class SliderAdapter extends PagerAdapter{
         this.context = context;
     }
 
-    //Arrays
+    /*Slider images */
     public int[] slide_images = {
             R.drawable.logo_launch,
             R.drawable.think,
             R.drawable.docs
     };
-
+    /* Slider headings */
     public String[] slide_headings = {
             "PRATITI",
             "THINK!!",
             "DOC REPO"
     };
-
+    /* Slider sub headings */
     public String[] slide_descs = {
             "An application by Govt. Medical College, Trivandrum",
             "A quiz application for medical students",

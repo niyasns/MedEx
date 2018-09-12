@@ -48,8 +48,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
     private ResideMenu resideMenu;
     private TextView heading;
     ProgressBar progressBar;
+
     FirebaseAuth mAuth;
     FirebaseFirestore db;
+
     Button update;
     ImageView circleImageView;
     EditText userName;
@@ -57,19 +59,18 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
     EditText userEmail;
     Spinner userDistrict;
     Spinner userBloodGroup;
+
     private String district;
     private String group;
-    String userId;
-
-    String docId;
-
+    private String userId;
+    private String docId;
 
     ArrayAdapter<String> districtAdapter;
     ArrayAdapter<String> groupAdapter;
-
+    /* List of districts */
     List<String> districts = Arrays.asList("District", "Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode",
             "Malappuram", "Palakkad", "Pathanamthitta", "Thrissur", "Wayanad", "Trivandrum");
-
+    /* List of blood groups */
     List<String> groups = Arrays.asList("Blood Group", "A+ve", "A-ve", "B+ve", "B-ve", "O+ve", "O-ve", "AB-ve", "AB+ve");
 
     public ProfileFragment() {
@@ -85,7 +86,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, A
         readUserDetails();
         return parentView;
     }
-
+    /* Reading user details from firebase */
     private void readUserDetails() {
         userId = mAuth.getUid();
         db.collection("users")

@@ -17,6 +17,7 @@ public class BackgroundSoundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        /* Initializing media player for playing audio */
         player = MediaPlayer.create(this, R.raw.background);
         player.setLooping(true);
         player.setVolume(100, 100);
@@ -24,7 +25,7 @@ public class BackgroundSoundService extends Service {
 
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        /* Starting audio with intent */
         player.start();
         return Service.START_NOT_STICKY;
     }
@@ -35,28 +36,11 @@ public class BackgroundSoundService extends Service {
         player.start();
     }
 
-    public IBinder onUnBind(Intent arg0) {
-        // TODO Auto-generated method stub
-
-        return null;
-    }
-
-    public void onStop() {
-
-    }
-    public void onPause() {
-
-    }
     @Override
     public void onDestroy() {
         super.onDestroy();
         player.stop();
         player.reset();
         player.release();
-    }
-
-    @Override
-    public void onLowMemory() {
-
     }
 }

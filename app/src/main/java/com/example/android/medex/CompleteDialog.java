@@ -18,20 +18,13 @@ import java.util.List;
 
 public class CompleteDialog extends Dialog implements View.OnClickListener {
 
-    Activity mActivity;
-    Button close;
+    /* Dailog for quiz completion */
+    private Activity mActivity;
+    private Button close;
 
     public CompleteDialog(@NonNull Activity activity) {
         super(activity);
         this.mActivity = activity;
-    }
-
-    public CompleteDialog(@NonNull Context context, int themeResId) {
-        super(context, themeResId);
-    }
-
-    protected CompleteDialog(@NonNull Context context, boolean cancelable, @Nullable OnCancelListener cancelListener) {
-        super(context, cancelable, cancelListener);
     }
 
     @Override
@@ -45,20 +38,11 @@ public class CompleteDialog extends Dialog implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        /* Dismiss dailog and replace fragment */
         dismiss();
         mActivity.getFragmentManager().popBackStackImmediate();
         FragmentTransaction fragmentTransaction = mActivity.getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
         fragmentTransaction.commit();
-    }
-
-    @Override
-    public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, @Nullable Menu menu, int deviceId) {
-
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-
     }
 }

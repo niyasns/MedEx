@@ -17,37 +17,17 @@ import java.util.List;
 
 public class CorrectDialog extends Dialog {
 
+    /* Dialog for correct answers */
     Activity mActivity;
-    Button close;
 
     public CorrectDialog(@NonNull Activity activity) {
         super(activity);
         this.mActivity = activity;
     }
-
-    public CorrectDialog(@NonNull Context context, int themeResId) {
-        super(context, themeResId);
-    }
-
-    protected CorrectDialog(@NonNull Context context, boolean cancelable, @Nullable OnCancelListener cancelListener) {
-        super(context, cancelable, cancelListener);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.correct_dialog);
-    }
-
-
-    @Override
-    public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, @Nullable Menu menu, int deviceId) {
-
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-
     }
 }

@@ -41,19 +41,15 @@ public class ModuleFragment extends android.app.Fragment {
 
     private View parentView;
     private ResideMenu resideMenu;
-
-    private TextView heading;
     private TextView no_data;
-
-    ProgressBar progressBar;
-
     private FirebaseFirestore db;
     private FirebaseStorage storage;
+
+    ProgressBar progressBar;
     RecyclerView recyclerView;
     FrameLayout frameLayout;
 
     ArrayList<Module> moduleArrayList;
-
     ModuleRecyclerAdapter moduleRecyclerAdapter;
 
     public ModuleFragment() {
@@ -74,7 +70,7 @@ public class ModuleFragment extends android.app.Fragment {
 
         return parentView;
     }
-
+    /* Loading files data from firebase */
     private void loadDataFromFirestore() {
 
         progressBar.setVisibility(View.VISIBLE);
@@ -114,12 +110,12 @@ public class ModuleFragment extends android.app.Fragment {
                     }
                 });
     }
-
+    /* Setting up firebase */
     private void setupFirebase() {
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
     }
-
+    /* Setting recycler view for modules */
     private void setupRecyclerView() {
 
         recyclerView = parentView.findViewById(R.id.module_recycler_view);
@@ -134,7 +130,7 @@ public class ModuleFragment extends android.app.Fragment {
         HomeActivity parentActivity = (HomeActivity) getActivity();
         Button button = parentActivity.findViewById(R.id.menu_button);
 
-        heading = parentActivity.findViewById(R.id.heading);
+        TextView heading = parentActivity.findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
         heading.setText(R.string.modules);
 
@@ -142,7 +138,7 @@ public class ModuleFragment extends android.app.Fragment {
         frameLayout = parentView.findViewById(R.id.recycle_frame);
 
         no_data = new TextView(parentActivity);
-        no_data.setText("No data found");
+        no_data.setText("No files found");
         no_data.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
         no_data.setTypeface(raleway_regular);
         no_data.setTextSize(24);
