@@ -54,7 +54,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     Integer progress;
     /* Integer representing total number of questions in present set */
     Integer total_questions;
-    /* Boolean to represent current user selection in correct */
+    /* Boolean to represent current user selection is correct or not */
     Boolean isCorrect;
     /* QuizSet instance for accessing data */
     QuizSet quizSet;
