@@ -24,7 +24,6 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -39,27 +38,60 @@ import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
-    private ViewPager mSlideViewPager;
     private LinearLayout mDotLayout;
-    private TextView[] mDots;
-    private SliderAdapter sliderAdapter;
-    private Button vSignup;
-
+    private Button loginPageButton;
     private ProgressBar progressBar;
-
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    /**
+     * variable to limit firebase settings to execute once.
+     */
     private static boolean isfirst = true;
-
-    FirebaseAuth mAuth;
-    FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
+
+        initFirebase();
+        initCalligraphy();
+        initView();
+        isStoragePermissionGranted();
+        loginPageButton.setOnClickListener(this);
+    }
+    /*
+    Setting up components for the activity.
+     */
+    private void initView() {
+        /*
+        Setting "LOGIN" button with raleway font.
+         */
+        loginPageButton = findViewById(R.id.view_pager_signup);
+        Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
+        loginPageButton.setTypeface(raleway_regular);
+        /*
+        Setting progress bar and making it invisible.
+         */
+        progressBar = findViewById(R.id.progressbar);
+        progressBar.setVisibility(View.INVISIBLE);
+        /*
+        Setting view pager
+         */
+        ViewPager mSlideViewPager = findViewById(R.id.view_pager);
+        mDotLayout = findViewById(R.id.dots_layout);
+        SliderAdapter sliderAdapter = new SliderAdapter(this);
+        mSlideViewPager.setAdapter(sliderAdapter);
+        addDotsIndicator(0);
+        mSlideViewPager.addOnPageChangeListener(viewListener);
+    }
+    /*
+     Initializing Calligraphy font library for raleway font.
+    */
+    private void initCalligraphy() {
 
         ViewPump.init(ViewPump.builder()
                 .addInterceptor(new CalligraphyInterceptor(
@@ -68,43 +100,51 @@ public class MainActivity extends AppCompatActivity {
                                 .setFontAttrId(R.attr.fontPath)
                                 .build()))
                 .build());
+    }
 
-        vSignup = (Button) findViewById(R.id.view_pager_signup);
+    /**
+     * Initializing Firebase
+     */
+    private void initFirebase() {
 
         db = FirebaseFirestore.getInstance();
         if(isfirst) {
-            Log.d(TAG, "Settings window entered");
+            Crashlytics.log(Log.DEBUG, TAG, "Initial app loading: FirebaseSettings initialized");
             FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                     .setTimestampsInSnapshotsEnabled(true)
                     .build();
             db.setFirestoreSettings(settings);
             isfirst = false;
         } else {
-            Log.d(TAG, "Settings window not");
+            Crashlytics.log(Log.DEBUG, TAG, "FirebaseSettings initialization skipped");
         }
         mAuth = FirebaseAuth.getInstance();
+    }
+    /*
+    Checking external storage permissions for downloading files.
+     */
+    public void isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v(TAG,"Permission is granted");
+            } else {
 
-        progressBar = findViewById(R.id.progressbar);
-        progressBar.setVisibility(View.INVISIBLE);
+                Log.v(TAG,"Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v(TAG,"Permission is granted as per sdk < 23");
+        }
+    }
 
-        Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
-        vSignup.setTypeface(raleway_regular);
-
-        mSlideViewPager = (ViewPager) findViewById(R.id.view_pager);
-        mDotLayout = (LinearLayout) findViewById(R.id.dots_layout);
-        sliderAdapter = new SliderAdapter(this);
-        mSlideViewPager.setAdapter(sliderAdapter);
-        addDotsIndicator(0);
-        mSlideViewPager.addOnPageChangeListener(viewListener);
-
-        isStoragePermissionGranted();
-
-        vSignup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.view_pager_signup:
                 progressBar.setVisibility(View.VISIBLE);
-                vSignup.setBackgroundResource(R.drawable.rounded_button_home_onclick);
+                loginPageButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 if (currentUser != null) {
                     updateUI(currentUser);
@@ -114,24 +154,29 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainActivity.this, SignupActivity.class);
                     startActivity(intent);
                 }
-            }
-        });
-
+                break;
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
-
+    /*
+    Calligarphy font library stuff
+     */
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
     }
 
+    /**
+     * Adding dots indicator below view pager.
+     * @param position : current slide in view pager.
+     */
     public void addDotsIndicator(int position) {
 
-        mDots = new TextView[3];
+        TextView[] mDots = new TextView[3];
         mDotLayout.removeAllViews();
 
         for(int i = 0; i < mDots.length; i++) {
@@ -150,12 +195,12 @@ public class MainActivity extends AppCompatActivity {
             mDotLayout.addView(mDots[i]);
         }
 
-        if(mDots.length > 0)
-        {
-            mDots[position].setTextColor(getResources().getColor(R.color.colorWhite));
-        }
+        mDots[position].setTextColor(getResources().getColor(R.color.colorWhite));
     }
 
+    /**
+     * Listener for view pager changes.
+     */
     ViewPager.OnPageChangeListener viewListener = new ViewPager.OnPageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -166,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
         public void onPageSelected(int position) {
 
             addDotsIndicator(position);
-
         }
 
         @Override
@@ -175,6 +219,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Updating view based on user signed in or not.
+     * If an user is already signed in, clicking login button directs to
+     * the HomeActivity without login again. If there is no user currently
+     * signed in login button directs to Login page.
+     * @param user :firebase currently logged in.
+     */
     private void updateUI(FirebaseUser user) {
 
         if(user != null)
@@ -207,28 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             progressBar.setVisibility(View.INVISIBLE);
-            Toast.makeText(this, "Google authentication failed", Toast.LENGTH_LONG).show();
-        }
-
-    }
-
-    public  boolean isStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.v(TAG,"Permission is granted");
-                return true;
-            } else {
-
-                Log.v(TAG,"Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
-            }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(TAG,"Permission is granted");
-            return true;
+            Toast.makeText(this, "Authentication failed", Toast.LENGTH_LONG).show();
         }
     }
-
 }

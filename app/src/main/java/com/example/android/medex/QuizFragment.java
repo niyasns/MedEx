@@ -193,6 +193,10 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         });
     }
 
+    /**
+     *
+     * @param isComplete
+     */
     private void sendResponse(final Boolean isComplete) {
 
         Map<String, Object> response = new HashMap<>();
