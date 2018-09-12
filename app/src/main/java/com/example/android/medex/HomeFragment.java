@@ -2,14 +2,10 @@ package com.example.android.medex;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,18 +19,13 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
 
     private View parentView;
     private ResideMenu resideMenu;
-
     HomeActivity parentActivity;
-
     Button quiz;
     Button module;
     Button Profile;
     Button Logout;
-
     TextView heading;
-
     FirebaseAuth mAuth;
-
 
     public HomeFragment() {
         // Required empty public constructor
@@ -52,11 +43,9 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
     private void setupFirebase() {
         mAuth = FirebaseAuth.getInstance();
         mAuth.getCurrentUser();
-
     }
 
     private void setupViews() {
-        Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
         parentActivity = (HomeActivity) getActivity();
         Button button = parentActivity.findViewById(R.id.menu_button);
@@ -114,7 +103,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-
+    /* Logout button */
     private void logOut() {
         mAuth.signOut();
         Intent intent = new Intent(parentActivity, MainActivity.class);

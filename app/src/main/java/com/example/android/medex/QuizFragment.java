@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
@@ -41,53 +42,55 @@ import at.grabner.circleprogress.CircleProgressView;
 
 public class QuizFragment extends android.app.Fragment implements View.OnClickListener {
 
-    private static final String TAG = "QuizFragmet";
+    private static final String TAG = "QuizFragment";
     private View parentView;
     private ResideMenu resideMenu;
-
     Button option_1;
     Button option_2;
     Button option_3;
-
     TextView heading;
     TextView question;
-
+    /* Integer to track progress in circular progress view */
     Integer progress;
-    Runnable r;
+    /* Integer representing total number of questions in present set */
     Integer total_questions;
+    /* Boolean to represent current user selection in correct */
     Boolean isCorrect;
+    /* QuizSet instance for accessing data */
     QuizSet quizSet;
+    /* List to place questions */
     List<Question> questionList;
+    /* Countdown timer to run with circular progress view */
     static CountDownTimer countDownTimer;
-
+    /* Answer for present question */
     static String pAnswer;
+    /* Array list to store user response */
     ArrayList<String> userResponse;
-
-
+    /* Cirular progressview instance */
     static CircleProgressView circleProgressView;
-
-    static private HomeActivity parentActivity;
-
+    private HomeActivity parentActivity;
+    /* Different dailog instances for quiz events */
     WrongDialog wrongDialog;
     CorrectDialog correctDialog;
     CompleteDialog completeDialog;
-
+    /* Firebase instances*/
     FirebaseFirestore db;
     FirebaseAuth mAuth;
+    /* Current question number */
     Integer currentQue;
-
+    /* List of quizes */
     List QuizList;
-
+    /* Answers array list */
     ArrayList<String> answers;
+    /* Quiz details for creating response*/
     String quiz_id;
     Timestamp created_at;
     String user_id;
-
-    Boolean is_fragment_visible;
+    /* ListenerRegistraion used to stop listener during fragment detach */
     ListenerRegistration listenerRegistration;
 
     public QuizFragment() {
-        // Required empty public constructorprotected
+        // Required empty public constructor
     }
 
     @Nullable
@@ -98,6 +101,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         mAuth = FirebaseAuth.getInstance();
         setupQuiz();
         setupFirebaseRealtimeListner();
+        setupCircularProgressViewListener();
         answers = new ArrayList<>();
         isCorrect = false;
         return parentView;
@@ -107,7 +111,6 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     public void onStart() {
         super.onStart();
         Log.d(TAG,"onStart entered");
-        is_fragment_visible = true;
         setupResponse();
     }
 
@@ -121,8 +124,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     @Override
     public void onDestroy() {
         super.onDestroy();
-        is_fragment_visible = false;
-        Log.d("QuizFragement", "Quiz fragement destroyed");
+        Log.d(TAG, "Quiz fragement destroyed");
     }
 
     @Override
@@ -140,8 +142,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     @Override
     public void onStop() {
         super.onStop();
-        is_fragment_visible = false;
-        Log.d("QuizFragement", "Quiz fragement stopped");
+        Log.d(TAG, "Quiz fragement stopped");
     }
 
     @Override
@@ -156,7 +157,11 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         Log.d(TAG, "OnDetach");
         listenerRegistration.remove();
     }
-
+    /**
+     * Firebase Listener for question number events.
+     * This Listener listens for the changes in current question number.
+     * When an event occurs, it changes the current question.
+     */
     private void setupFirebaseRealtimeListner() {
 
         db = FirebaseFirestore.getInstance();
@@ -167,7 +172,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                                 @javax.annotation.Nullable FirebaseFirestoreException e) {
 
                 if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
+                    Crashlytics.log(Log.WARN, TAG, "Listen failed " + e);
                     return;
                 }
 
@@ -182,20 +187,24 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                         if(correctDialog.isShowing()) {
                             correctDialog.dismiss();
                         }
-                        if(temp != -1 && isCorrect.equals(true)) {
-                            changeQuestion(currentQue);
+                        if(temp != null) {
+                            if(temp != -1 && isCorrect.equals(true)) {
+                                changeQuestion(currentQue);
+                            }
+                        } else {
+                            Crashlytics.log(Log.DEBUG, TAG, "Current question value is null");
                         }
                     }
                 } else {
-                    Log.d(TAG, "Current data: null");
+                    Crashlytics.log(Log.DEBUG, TAG, "Current data : null");
                 }
             }
         });
     }
 
     /**
-     *
-     * @param isComplete
+     * Sending response after quiz is completed.
+     * @param isComplete boolean to check if quiz is complete or not.
      */
     private void sendResponse(final Boolean isComplete) {
 
@@ -226,7 +235,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                     }
                 });
     }
-
+    /* Setting up quiz */
     private void setupQuiz() {
 
         progress = 0;
@@ -234,8 +243,10 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         currentQue = 0;
         pAnswer = "null";
         try{
+            /* Getting quiz list by calling parent activity method */
             QuizList = parentActivity.getQuizList();
         } catch (Exception e) {
+            /* If quiz list is null, Quiz fragemnt replaces with home fragment */
             Log.d(TAG, "Quiz List not availble");
             parentActivity.getFragmentManager().popBackStackImmediate();
             FragmentTransaction fragmentTransaction = parentActivity.getFragmentManager().beginTransaction();
@@ -252,74 +263,85 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
             circleProgressView.setMaxValue(quizSet.getTimeOut());
             circleProgressView.setValue(0);
 
-            countDownTimer = new CountDownTimer(quizSet.getTimeOut() * 1000, 1000) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    progress++;
-                    circleProgressView.setValue(quizSet.getTimeOut() - (millisUntilFinished / 1000));
-                }
-
-                @Override
-                public void onFinish() {
-                    Log.d("QuizFragment", "count down finished");
-                    circleProgressView.setValue(quizSet.getTimeOut());
-                    countDownTimer.cancel();
-                }
-            };
-
+            setupCountDownTimer();
+            /* Calling changeQuestion with argument 0 to represent first question */
             changeQuestion(0);
-
-            circleProgressView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
-                @Override
-                public void onProgressChanged(float value) {
-                    if(value == quizSet.getTimeOut()) {
-                        Log.d("QuizFragment", "onprogresscahnged entered");
-                        if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
-                            isCorrect = false;
-                            Log.d("Current value:", (currentQue.toString()));
-                            answers.add(pAnswer);
-                            sendResponse(false);
-                        } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
-                            Log.d("Current value:", (currentQue.toString()));
-                            answers.add(pAnswer);
-                            isCorrect = true;
-                            correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                            correctDialog.show();
-                        }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
-                            Log.d("Current value:", (currentQue.toString()));
-                            isCorrect = true;
-                            answers.add(pAnswer);
-                            sendResponse(true);
-                        }
-                    }
-                }
-            });
-
-            option_1.setOnClickListener(this);
-            option_2.setOnClickListener(this);
-            option_3.setOnClickListener(this);
         }
     }
+    /* Count down timer initialisation for circular progress view */
+    private void setupCountDownTimer() {
 
+        countDownTimer = new CountDownTimer(quizSet.getTimeOut() * 1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                progress++;
+                circleProgressView.setValue(quizSet.getTimeOut() - (millisUntilFinished / 1000));
+            }
+
+            @Override
+            public void onFinish() {
+                Log.d("QuizFragment", "count down finished");
+                circleProgressView.setValue(quizSet.getTimeOut());
+                countDownTimer.cancel();
+            }
+        };
+
+    }
+    /* Event handling for circular progress view */
+    private void setupCircularProgressViewListener() {
+
+        circleProgressView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
+            @Override
+            public void onProgressChanged(float value) {
+                /* Checking time out reached or not */
+                if(value == quizSet.getTimeOut()) {
+                    Log.d("QuizFragment", "onprogresscahnged entered");
+                    if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
+                        /* If no answer is provided or answer is wrong*/
+                        isCorrect = false;
+                        Log.d("Current value:", (currentQue.toString()));
+                        answers.add(pAnswer);
+                        sendResponse(false);
+                    } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
+                        /* If answer is correct and questions remaining */
+                        Log.d("Current value:", (currentQue.toString()));
+                        answers.add(pAnswer);
+                        isCorrect = true;
+                        correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        correctDialog.show();
+                    }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
+                        /* If answer is correct and no questions remaining */
+                        Log.d("Current value:", (currentQue.toString()));
+                        isCorrect = true;
+                        answers.add(pAnswer);
+                        sendResponse(true);
+                    }
+                }
+            }
+        });
+    }
+    /* Method for changing question */
     public void changeQuestion(Integer currentQue) {
         Log.d("QuizFragment", "change question entered");
         progress = 0;
         if(currentQue < total_questions) {
+            /* Resetting button for new question */
             resetButton();
+            /* Enable button that are disable during previous question */
             enableButton();
             question.setText(questionList.get(currentQue).getQuestion());
             circleProgressView.setValue(0);
             option_1.setText(questionList.get(currentQue).getOptions().get(0));
             option_2.setText(questionList.get(currentQue).getOptions().get(1));
             option_3.setText(questionList.get(currentQue).getOptions().get(2));
+            /* Executing async task for countdown timer */
             new TimerAsync().execute();
         }
 
     }
 
     private void setupViews() {
-        is_fragment_visible = true;
-        Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
+
         Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
         parentActivity = (HomeActivity) getActivity();
         Button button = parentActivity.findViewById(R.id.menu_button);
@@ -347,6 +369,10 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                 resideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
             }
         });
+
+        option_1.setOnClickListener(this);
+        option_2.setOnClickListener(this);
+        option_3.setOnClickListener(this);
     }
 
     @Override
@@ -375,11 +401,15 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
 
     }
 
+    /**
+     * Change the color of selected option or button
+     * @param button selected button
+     */
     public void changeClickedButton(Button button) {
         button.setTextColor(this.getResources().getColor(R.color.colorTransparentWhite));
         button.setBackgroundResource(R.drawable.selected_option);
     }
-
+    /* Resetting all button to default state */
     public void  resetButton() {
         option_1.setTextColor(this.getResources().getColor(R.color.colorSecondary));
         option_1.setBackgroundResource(R.drawable.rounded_button);
@@ -390,25 +420,24 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         option_3.setTextColor(this.getResources().getColor(R.color.colorSecondary));
         option_3.setBackgroundResource(R.drawable.rounded_button);
     }
-
+    /* Enable all buttons for next question */
     public void enableButton() {
         option_1.setEnabled(true);
         option_2.setEnabled(true);
         option_3.setEnabled(true);
     }
-
+    /* Disable all button after selecting one option */
     public void disableButton() {
         option_1.setEnabled(false);
         option_2.setEnabled(false);
         option_3.setEnabled(false);
     }
-
+    /* Async task for count down timer */
     static class TimerAsync extends AsyncTask<Void, Void, Void > {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
         }
 
         @Override
@@ -423,7 +452,6 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
             super.onPostExecute(aVoid);
         }
     }
-
 }
 
 
