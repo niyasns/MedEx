@@ -135,7 +135,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
             DownloadManager.Request request = new DownloadManager.Request(uri);
             request.setTitle(strings[1]);
             request.setDescription(strings[2]);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, strings[1]);
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, strings[1] + ".pdf");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
             if (downloadManager != null) {
@@ -160,7 +160,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 Toast.makeText(mContext, "Download Failed", Toast.LENGTH_SHORT).show();
             } else {
 
-                Toast.makeText(mContext, "Download complete. Check Downloads folder.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Downloading. Check Downloads", Toast.LENGTH_SHORT).show();
             }
         }
     }

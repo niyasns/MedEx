@@ -25,21 +25,21 @@ public class SliderAdapter extends PagerAdapter{
 
     //Arrays
     public int[] slide_images = {
-            R.drawable.logo_facebook,
-            R.drawable.logo_google,
-            R.drawable.logo_facebook
+            R.drawable.logo_launch,
+            R.drawable.think,
+            R.drawable.docs
     };
 
     public String[] slide_headings = {
-            "HELLO WORLD",
-            "GOOGLE",
-            "FACEBOOK"
+            "PRATITI",
+            "THINK!!",
+            "DOC REPO"
     };
 
     public String[] slide_descs = {
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+            "An application by Govt. Medical College, Trivandrum",
+            "A quiz application for medical students",
+            "Download study modules effortlessly",
     };
 
     @Override

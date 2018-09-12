@@ -211,11 +211,17 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user, "facebook");
                         } else {
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignupActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            updateUI(null, "facebook");
-
+                            Log.w(TAG, "signInWithCredential:failure" + task.getException().getMessage());
+                            Toast.makeText(SignupActivity.this, "Account already exist for provided email.\n" +
+                                            "Please login with another account",
+                                    Toast.LENGTH_LONG).show();
+                            mFSignUpButton.setEnabled(true);
+                            mGSignUpButton.setEnabled(true);
+                            progressBar.setVisibility(View.INVISIBLE);
+                            mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                            mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
+                            mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                            mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                         }
                     }
                 });
@@ -271,9 +277,16 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             updateUI(user, "google");
                         } else {
                             // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(SignupActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
-                            updateUI(null, "google");
+                            Toast.makeText(SignupActivity.this, "Account already exist for provided email.\n" +
+                                            "Please login with another account",
+                                    Toast.LENGTH_LONG).show();
+                            mFSignUpButton.setEnabled(true);
+                            mGSignUpButton.setEnabled(true);
+                            progressBar.setVisibility(View.INVISIBLE);
+                            mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                            mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
+                            mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
+                            mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                         }
                     }
                 });

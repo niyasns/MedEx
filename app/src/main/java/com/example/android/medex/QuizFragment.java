@@ -1,14 +1,19 @@
 package com.example.android.medex;
 
+import android.app.AlertDialog;
+import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +29,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.special.ResideMenu.ResideMenu;
 
 import java.util.ArrayList;
@@ -60,7 +66,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
 
     static CircleProgressView circleProgressView;
 
-    private HomeActivity parentActivity;
+    static private HomeActivity parentActivity;
 
     WrongDialog wrongDialog;
     CorrectDialog correctDialog;
@@ -78,9 +84,10 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     String user_id;
 
     Boolean is_fragment_visible;
+    ListenerRegistration listenerRegistration;
 
     public QuizFragment() {
-        // Required empty public constructor
+        // Required empty public constructorprotected
     }
 
     @Nullable
@@ -88,21 +95,24 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         parentView = inflater.inflate(R.layout.quiz_fragment, container, false);
         setupViews();
+        mAuth = FirebaseAuth.getInstance();
+        setupQuiz();
+        setupFirebaseRealtimeListner();
+        answers = new ArrayList<>();
+        isCorrect = false;
         return parentView;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        mAuth = FirebaseAuth.getInstance();
-        setupQuiz();
-        setupFirebaseRealtimeListner();
+        Log.d(TAG,"onStart entered");
+        is_fragment_visible = true;
         setupResponse();
     }
 
     private void setupResponse() {
 
-        answers = new ArrayList<>();
         quiz_id = quizSet.getQuizId();
         user_id = mAuth.getUid();
         created_at = quizSet.getScheduledTime();
@@ -116,17 +126,42 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     }
 
     @Override
+    public void onResume() {
+        Log.d(TAG, "onResume Entered");
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause Entered");
+        super.onPause();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         is_fragment_visible = false;
         Log.d("QuizFragement", "Quiz fragement stopped");
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d(TAG, "OnDestroyView");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.d(TAG, "OnDetach");
+        listenerRegistration.remove();
+    }
+
     private void setupFirebaseRealtimeListner() {
 
         db = FirebaseFirestore.getInstance();
         final DocumentReference documentReference = db.collection("config").document("currentQuiz");
-        documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        listenerRegistration = documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot,
                                 @javax.annotation.Nullable FirebaseFirestoreException e) {
@@ -136,12 +171,13 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                     return;
                 }
 
-                if (documentSnapshot != null && documentSnapshot.exists() && is_fragment_visible.equals(true)) {
+                if (documentSnapshot != null && documentSnapshot.exists()) {
                     Log.d(TAG, "Current data: " + documentSnapshot.getData());
                     if(isCorrect) {
                         Long temp = documentSnapshot.getLong("qNo");
                         if (temp != null) {
                             currentQue = temp.intValue();
+                            Log.d(TAG, currentQue + " Current Que");
                         }
                         if(correctDialog.isShowing()) {
                             correctDialog.dismiss();
@@ -191,65 +227,79 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
 
         progress = 0;
         userResponse = new ArrayList<>();
+        currentQue = 0;
         pAnswer = "null";
-        isCorrect = true;
-        QuizList = parentActivity.getQuizList();
-        quizSet = (QuizSet) QuizList.get(0);
-        questionList = quizSet.getQuestions();
-        total_questions = questionList.size();
-        circleProgressView.setMaxValue(quizSet.getTimeOut());
-        circleProgressView.setValue(0);
+        try{
+            QuizList = parentActivity.getQuizList();
+        } catch (Exception e) {
+            Log.d(TAG, "Quiz List not availble");
+            parentActivity.getFragmentManager().popBackStackImmediate();
+            FragmentTransaction fragmentTransaction = parentActivity.getFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
+            fragmentTransaction.commit();
+        }
 
-        countDownTimer = new CountDownTimer(quizSet.getTimeOut() * 1000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                progress++;
-                circleProgressView.setValue(quizSet.getTimeOut() - (millisUntilFinished / 1000));
-            }
+        if(QuizList.isEmpty()){
+            Log.d(TAG, "Quiz list empty");
+        } else {
+            quizSet = (QuizSet) QuizList.get(0);
+            questionList = quizSet.getQuestions();
+            total_questions = questionList.size();
+            circleProgressView.setMaxValue(quizSet.getTimeOut());
+            circleProgressView.setValue(0);
 
-            @Override
-            public void onFinish() {
-                Log.d("QuizFragment", "count down finished");
-                circleProgressView.setValue(quizSet.getTimeOut());
-                countDownTimer.cancel();
-            }
-        };
+            countDownTimer = new CountDownTimer(quizSet.getTimeOut() * 1000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    progress++;
+                    circleProgressView.setValue(quizSet.getTimeOut() - (millisUntilFinished / 1000));
+                }
 
-        changeQuestion(0);
+                @Override
+                public void onFinish() {
+                    Log.d("QuizFragment", "count down finished");
+                    circleProgressView.setValue(quizSet.getTimeOut());
+                    countDownTimer.cancel();
+                }
+            };
 
-        circleProgressView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
-            @Override
-            public void onProgressChanged(float value) {
-                if(value == quizSet.getTimeOut()) {
-                    Log.d("QuizFragment", "onprogresscahnged entered");
-                    if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
-                        isCorrect = false;
-                        Log.d("Current value:", (currentQue.toString()));
-                        answers.add(pAnswer);
-                        sendResponse(false);
-                    } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
-                        Log.d("Current value:", (currentQue.toString()));
-                        answers.add(pAnswer);
-                        correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                        correctDialog.show();
-                    }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
-                        Log.d("Current value:", (currentQue.toString()));
-                        answers.add(pAnswer);
-                        sendResponse(true);
+            changeQuestion(0);
+
+            circleProgressView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
+                @Override
+                public void onProgressChanged(float value) {
+                    if(value == quizSet.getTimeOut()) {
+                        Log.d("QuizFragment", "onprogresscahnged entered");
+                        if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
+                            isCorrect = false;
+                            Log.d("Current value:", (currentQue.toString()));
+                            answers.add(pAnswer);
+                            sendResponse(false);
+                        } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
+                            Log.d("Current value:", (currentQue.toString()));
+                            answers.add(pAnswer);
+                            isCorrect = true;
+                            correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            correctDialog.show();
+                        }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
+                            Log.d("Current value:", (currentQue.toString()));
+                            isCorrect = true;
+                            answers.add(pAnswer);
+                            sendResponse(true);
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        option_1.setOnClickListener(this);
-        option_2.setOnClickListener(this);
-        option_3.setOnClickListener(this);
+            option_1.setOnClickListener(this);
+            option_2.setOnClickListener(this);
+            option_3.setOnClickListener(this);
+        }
     }
 
     public void changeQuestion(Integer currentQue) {
-        Log.d("QuizFragment", "change fragment entered");
+        Log.d("QuizFragment", "change question entered");
         progress = 0;
-        isCorrect = true;
         if(currentQue < total_questions) {
             resetButton();
             enableButton();
@@ -359,6 +409,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
 
         @Override
         protected Void doInBackground(Void... voids) {
+
             countDownTimer.start();
             return null;
         }
@@ -368,4 +419,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
             super.onPostExecute(aVoid);
         }
     }
+
 }
+
+

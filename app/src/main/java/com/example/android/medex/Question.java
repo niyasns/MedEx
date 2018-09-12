@@ -8,7 +8,6 @@ import java.util.List;
 class Question {
 
     String question;
-    String timeOut;
     List<String> options;
     String answer;
 
@@ -16,9 +15,8 @@ class Question {
 
     }
 
-    public Question(String question, String timeOut, List<String> options, String answer, HashMap<String, Boolean> responses) {
+    public Question(String question, List<String> options, String answer, HashMap<String, Boolean> responses) {
         this.question = question;
-        this.timeOut = timeOut;
         this.options = options;
         this.answer = answer;
     }
@@ -29,14 +27,6 @@ class Question {
 
     public void setQuestion(String question) {
         this.question = question;
-    }
-
-    public Integer getTimeOut() {
-        return Integer.parseInt(timeOut);
-    }
-
-    public void setTimeOut(String timeOut) {
-        this.timeOut = timeOut;
     }
 
     public List<String> getOptions() {

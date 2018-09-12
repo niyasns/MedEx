@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alexfu.countdownview.CountDownView;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -133,6 +134,7 @@ public class CountDownFragment extends Fragment {
 
         QuizList = parentActivity.getQuizList();
         if(QuizList.isEmpty()) {
+            progressBar.setVisibility(View.INVISIBLE);
             countDownView.setVisibility(View.INVISIBLE);
             quizCountText.setText("No Data Found");
             quizCountText.setTextSize(24);
@@ -150,45 +152,53 @@ public class CountDownFragment extends Fragment {
             public void onSuccess(HttpsCallableResult httpsCallableResult) {
                 long timestamp = (long) httpsCallableResult.getData();
                 current = new Date(timestamp);
-                Log.w("Current Time", current.toString());
-                Log.w("Next Quiz Time", nextQuiz.toString());
+                if(current != null && nextQuiz != null) {
+                    Log.w("Current Time", current.toString());
+                    Log.w("Next Quiz Time", nextQuiz.toString());
 
-                long different = nextQuiz.getTime() - current.getTime();
+                    long different = nextQuiz.getTime() - current.getTime();
 
-                long secondsInMilli = 1000;
-                long minutesInMilli = secondsInMilli * 60;
-                long hoursInMilli = minutesInMilli * 60;
-                long daysInMilli = hoursInMilli * 24;
+                    long secondsInMilli = 1000;
+                    long minutesInMilli = secondsInMilli * 60;
+                    long hoursInMilli = minutesInMilli * 60;
+                    long daysInMilli = hoursInMilli * 24;
 
-                long elapsedDays = different / daysInMilli;
-                different = different % daysInMilli;
+                    long elapsedDays = different / daysInMilli;
+                    different = different % daysInMilli;
 
-                long elapsedHours = different / hoursInMilli;
-                different = different % hoursInMilli;
+                    long elapsedHours = different / hoursInMilli;
+                    different = different % hoursInMilli;
 
-                long elapsedMinutes = different / minutesInMilli;
-                different = different % minutesInMilli;
+                    long elapsedMinutes = different / minutesInMilli;
+                    different = different % minutesInMilli;
 
-                long elapsedSeconds = different / secondsInMilli;
+                    long elapsedSeconds = different / secondsInMilli;
 
-                elapsedHours = elapsedHours + (elapsedDays * 24);
+                    elapsedHours = elapsedHours + (elapsedDays * 24);
 
-                long total = (elapsedHours * 60 * 60000) + (elapsedMinutes * 60000) + ((elapsedSeconds) * 1000);
+                    long total = (elapsedHours * 60 * 60000) + (elapsedMinutes * 60000) + ((elapsedSeconds) * 1000);
 
-                progressBar.setVisibility(View.INVISIBLE);
+                    progressBar.setVisibility(View.INVISIBLE);
 
-                if(total < 0) {
-                    countDownView.setVisibility(View.INVISIBLE);
-                    quizCountText.setText("Initiating quiz");
-                    quizCountText.setTextSize(24);
-                } else if(total == 0) {
+                    if(total < 0) {
+                        countDownView.setVisibility(View.INVISIBLE);
+                        quizCountText.setText("No data available");
+                        quizCountText.setTextSize(24);
+                    } else if(total == 0) {
+                        countDownView.setVisibility(View.INVISIBLE);
+                        quizCountText.setText("No data available");
+                        quizCountText.setTextSize(24);
+                    } else {
+                        countDownView.reset();
+                        countDownView.setStartDuration(total);
+                        countDownView.start();
+                    }
+                } else {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Toast.makeText(parentActivity, "Error on getting data", Toast.LENGTH_SHORT).show();
                     countDownView.setVisibility(View.INVISIBLE);
                     quizCountText.setText("No data available");
                     quizCountText.setTextSize(24);
-                } else {
-                    countDownView.reset();
-                    countDownView.setStartDuration(total);
-                    countDownView.start();
                 }
             }
         });

@@ -65,6 +65,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
         module = parentView.findViewById(R.id.modules);
         Profile = parentView.findViewById(R.id.profile);
         Logout = parentView.findViewById(R.id.logout);
+        parentActivity.stopService(new Intent(parentActivity, BackgroundSoundService.class));
 
         heading.setText(R.string.home);
         quiz.setTypeface(raleway_regular);

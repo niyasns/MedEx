@@ -1,11 +1,15 @@
 package com.example.android.medex;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -58,11 +62,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static FirebaseFirestore db;
     FirebaseAuth mAuth;
 
-    static boolean isInital;
+    boolean isInital;
 
     private HomeActivity mContext;
 
     private AdView mAdview;
+    private BackgroundSound backgroundSound;
+
+    Intent svc;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +84,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         heading = findViewById(R.id.heading);
         heading.setTypeface(raleway_bold);
         quizSets = new ArrayList<>();
+        quizSets.clear();
         mAdview = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
 
@@ -98,6 +107,25 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStart() {
         super.onStart();
         isInital = true;
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+        if(fragment instanceof QuizFragment) {
+            new AlertDialog.Builder(this)
+                    .setTitle("PRATITI")
+                    .setMessage("Are you sure you want to exit?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            changeFragment(new HomeFragment());
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        }
     }
 
     static private void setupNavigation() {
@@ -130,15 +158,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 if (documentSnapshot != null) {
                     Log.d(TAG, "Quiz started" + (current instanceof QuizFragment) + isInital);
-                    if (!(current instanceof QuizFragment) && !isInital) {
+                    if (!(current instanceof QuizFragment)) {
                         Log.d("!IsInitial","Starting quiz fragment");
                         Long temp = documentSnapshot.getLong("qNo");
                         Log.d("Initial Current QUe: ", temp.toString());
                         if(temp == 0) {
                             changeFragment(new QuizFragment());
                         }
-                    } else {
-                        isInital = false;
                     }
 
                 } else {
@@ -174,8 +200,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static private void firebaseLoadQuizSet(FirebaseFirestore db) {
 
         final CollectionReference quizRef = db.collection("quizes");
-        quizSets.clear();
-        quizRef.whereEqualTo("started", false)
+        quizRef.whereEqualTo("completed",false)
                 .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(10)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -244,20 +269,34 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     private void logOut() {
         mAuth.signOut();
+        finish();
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         finishAffinity();
         startActivity(intent);
     }
 
-    private void changeFragment(Fragment targetFragment) {
+    private void changeFragment(final Fragment targetFragment) {
 
         resideMenu.clearIgnoredViewList();
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.replace(R.id.frame_window, targetFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        if(targetFragment instanceof QuizFragment) {
+            svc = new Intent(this, BackgroundSoundService.class);
+            startService(svc);
+        }
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                fragmentTransaction.replace(R.id.frame_window, targetFragment);
+                try {
+                    fragmentTransaction.commit();
+                } catch (IllegalStateException e) {
+                    fragmentTransaction.commitAllowingStateLoss();
+                }
+            }
+        });
+
     }
 
     static class QuizSetLoadAsync extends AsyncTask<Void, Void, Void> {
@@ -279,6 +318,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             super.onPostExecute(aVoid);
             setupNavigation();
             progressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
+
+    class BackgroundSound extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            MediaPlayer player = MediaPlayer.create(HomeActivity.this, R.raw.background);
+            player.setVolume(15.0f, 15.0f);
+            player.setLooping(true);
+            player.start();
+            return  null;
         }
     }
 

@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
 
+    private static boolean isfirst = true;
+
     FirebaseAuth mAuth;
     FirebaseFirestore db;
 
@@ -70,10 +72,16 @@ public class MainActivity extends AppCompatActivity {
         vSignup = (Button) findViewById(R.id.view_pager_signup);
 
         db = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        db.setFirestoreSettings(settings);
+        if(isfirst) {
+            Log.d(TAG, "Settings window entered");
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .build();
+            db.setFirestoreSettings(settings);
+            isfirst = false;
+        } else {
+            Log.d(TAG, "Settings window not");
+        }
         mAuth = FirebaseAuth.getInstance();
 
         progressBar = findViewById(R.id.progressbar);
@@ -109,6 +117,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
