@@ -67,6 +67,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
         quiz.setOnClickListener(this);
         module.setOnClickListener(this);
         Profile.setOnClickListener(this);
+        Credits.setOnClickListener(this);
         Logout.setOnClickListener(this);
 
         resideMenu = parentActivity.getResideMenu();
@@ -90,6 +91,9 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
                 break;
             case R.id.profile:
                 changeFragment(new ProfileFragment());
+                break;
+            case R.id.credits:
+                changeFragment(new CreditsFragment());
                 break;
             case R.id.logout:
                 logOut();

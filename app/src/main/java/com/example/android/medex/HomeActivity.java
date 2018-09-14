@@ -56,6 +56,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ResideMenuItem itemModule;
     ResideMenuItem itemProfile;
     ResideMenuItem itemLogout;
+    ResideMenuItem itemCredits;
     /* Firebase variables */
     FirebaseFirestore db;
     FirebaseAuth mAuth;
@@ -237,18 +238,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         itemQuiz = new ResideMenuItem(this, R.drawable.ic_quiz, "Quiz");
         itemModule = new ResideMenuItem(this, R.drawable.ic_module, "Modules");
         itemProfile = new ResideMenuItem(this, R.drawable.ic_profile, "Profile");
+        itemCredits = new ResideMenuItem(this, R.drawable.ic_credits, "Credits");
         itemLogout = new ResideMenuItem(this, R.drawable.ic_logout, "Logout");
 
         itemHome.setOnClickListener(this);
         itemQuiz.setOnClickListener(this);
         itemModule.setOnClickListener(this);
         itemProfile.setOnClickListener(this);
+        itemCredits.setOnClickListener(this);
         itemLogout.setOnClickListener(this);
 
         resideMenu.addMenuItem(itemHome, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemQuiz, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemModule, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemProfile, ResideMenu.DIRECTION_LEFT);
+        resideMenu.addMenuItem(itemCredits, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemLogout, ResideMenu.DIRECTION_LEFT);
     }
 
@@ -268,6 +272,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             changeFragment(new ModuleFragment());
         } else if (v == itemProfile) {
             changeFragment(new ProfileFragment());
+        } else if (v == itemCredits) {
+            changeFragment(new CreditsFragment());
         } else if (v == itemLogout) {
             logOut();
         }
