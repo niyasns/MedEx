@@ -15,6 +15,11 @@
     <color name="colorTransparentPrimaryLight">#804f5b62</color>
     <color name="colorGreen">#00E676</color>
     <color name="colorBlue">#00B0FF</color>
+    <color name="colorTransparentGreen">#1A2ecc71</color>
+    <color name="colorTransparentBlue">#1A00B0FF</color>
+    <color name="colorTransparentRed">#1Ae74c3c</color>
+    <color name="colorTransparentTurquoise">#1A1abc9c</color>
+    <color name="colorTransparentViolet">#1A9b59b6</color>
     <color name="colorBlack">#263238</color>
     <color name="colorGrey">#37474F</color>
 </resources>

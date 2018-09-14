@@ -7,52 +7,64 @@
     android:layout_gravity="center"
     android:orientation="vertical"
     android:background="@drawable/background"
-    android:gravity="center">
+    android:gravity="center"
+    android:weightSum="5">
 
     <Button
         android:id="@+id/quiz"
-        android:layout_width="250dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:text="Quiz"
-        android:textSize="24sp"
+        android:textSize="36sp"
         android:gravity="center"
-        android:layout_margin="8dp"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@drawable/rounded_button"/>
+        android:background="@color/colorTransparentGreen"/>
     <Button
         android:id="@+id/modules"
-        android:layout_width="250dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:text="Modules"
-        android:textSize="24sp"
+        android:textSize="36sp"
         android:gravity="center"
-        android:layout_margin="8dp"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@drawable/rounded_button"/>
+        android:background="@color/colorTransparentBlue"/>
     <Button
         android:id="@+id/profile"
-        android:layout_width="250dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:text="Profile"
-        android:textSize="24sp"
+        android:textSize="36sp"
         android:gravity="center"
-        android:layout_margin="8dp"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@drawable/rounded_button"/>
+        android:background="@color/colorTransparentRed"/>
+    <Button
+        android:id="@+id/credits"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Credits"
+        android:textSize="36sp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:textColor="@color/colorTransparentWhite"
+        android:background="@color/colorTransparentTurquoise"/>
     <Button
         android:id="@+id/logout"
-        android:layout_width="250dp"
-        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:text="Logout"
-        android:textSize="24sp"
+        android:textSize="36sp"
         android:gravity="center"
-        android:layout_margin="8dp"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@drawable/rounded_button"/>
+        android:background="@color/colorTransparentViolet"/>
 
 
 </LinearLayout>

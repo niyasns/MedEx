@@ -21,7 +21,7 @@
         android:backgroundTint="@color/colorTransparentBlack"
         android:indeterminateTint="@color/colorSecondary"/>
 
-    <android.support.constraint.ConstraintLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -31,13 +31,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/rectangle_shape"
             android:elevation="2dp"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0">
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/menu_button"
@@ -66,10 +60,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:weightSum="2"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_below="@id/linearLayout">
 
             <FrameLayout
                 android:id="@+id/frame_window"
@@ -90,6 +81,6 @@
 
         </LinearLayout>
 
-    </android.support.constraint.ConstraintLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
