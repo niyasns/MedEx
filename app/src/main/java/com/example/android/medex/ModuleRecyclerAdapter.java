@@ -1,13 +1,17 @@
 package com.example.android.medex;
 
+import android.Manifest;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +33,7 @@ import java.util.zip.CheckedOutputStream;
 
 public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder> {
 
+    private static final String TAG = "ModuleRecyclerAdapter";
     private ModuleFragment moduleFragment;
     private ArrayList<Module> moduleArrayList;
     private FirebaseStorage storage;

@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private boolean isPermissionallowed;
     /**
      * variable to limit firebase settings to execute once.
      */
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initFirebase();
         initCalligraphy();
         initView();
-        isStoragePermissionGranted();
+        isPermissionallowed = isStoragePermissionGranted();
         loginPageButton.setOnClickListener(this);
     }
     /*
@@ -123,19 +124,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /*
     Checking external storage permissions for downloading files.
      */
-    public void isStoragePermissionGranted() {
+    public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG,"Permission is granted");
+                return true;
             } else {
-
                 Log.v(TAG,"Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
             }
         }
         else { //permission is automatically granted on sdk<23 upon installation
             Log.v(TAG,"Permission is granted as per sdk < 23");
+            return true;
         }
     }
 
@@ -146,13 +149,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 progressBar.setVisibility(View.VISIBLE);
                 loginPageButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
                 FirebaseUser currentUser = mAuth.getCurrentUser();
-                if (currentUser != null) {
-                    updateUI(currentUser);
-                }else
-                {
-                    progressBar.setVisibility(View.INVISIBLE);
-                    Intent intent = new Intent(MainActivity.this, SignupActivity.class);
-                    startActivity(intent);
+                if(isPermissionallowed) {
+                    if (currentUser != null) {
+                        updateUI(currentUser);
+                    }else
+                    {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        Intent intent = new Intent(MainActivity.this, SignupActivity.class);
+                        startActivity(intent);
+                    }
+                } else {
+                    isPermissionallowed = isStoragePermissionGranted();
+                    if(!isPermissionallowed) {
+                        Toast.makeText(this, "Please allow read and write permissions", Toast.LENGTH_LONG).show();
+                    }
                 }
                 break;
         }
