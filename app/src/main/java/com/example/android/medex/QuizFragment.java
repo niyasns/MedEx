@@ -89,6 +89,8 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     /* ListenerRegistraion used to stop listener during fragment detach */
     ListenerRegistration listenerRegistration;
 
+    Button userAnswer;
+
     public QuizFragment() {
         // Required empty public constructor
     }
@@ -104,6 +106,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         setupCircularProgressViewListener();
         answers = new ArrayList<>();
         isCorrect = false;
+        userAnswer = null;
         return parentView;
     }
 
@@ -111,7 +114,6 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     public void onStart() {
         super.onStart();
         Log.d(TAG,"onStart entered");
-        setupResponse();
     }
 
     private void setupResponse() {
@@ -251,13 +253,14 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
             parentActivity.getFragmentManager().popBackStackImmediate();
             FragmentTransaction fragmentTransaction = parentActivity.getFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
-            fragmentTransaction.commit();
+            fragmentTransaction.commitAllowingStateLoss();
         }
 
         if(QuizList.isEmpty()){
             Log.d(TAG, "Quiz list empty");
         } else {
             quizSet = (QuizSet) QuizList.get(0);
+            setupResponse();
             questionList = quizSet.getQuestions();
             total_questions = questionList.size();
             circleProgressView.setMaxValue(quizSet.getTimeOut());
@@ -301,12 +304,15 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                         isCorrect = false;
                         Log.d("Current value:", (currentQue.toString()));
                         answers.add(pAnswer);
+                        showCorrectAnswer(questionList.get(currentQue).getAnswer());
+                        showWrongAnswer();
                         sendResponse(false);
                     } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
                         /* If answer is correct and questions remaining */
                         Log.d("Current value:", (currentQue.toString()));
                         answers.add(pAnswer);
                         isCorrect = true;
+                        showCorrectAnswer();
                         correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         correctDialog.show();
                     }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
@@ -314,12 +320,41 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                         Log.d("Current value:", (currentQue.toString()));
                         isCorrect = true;
                         answers.add(pAnswer);
+                        showCorrectAnswer();
                         sendResponse(true);
                     }
                 }
             }
         });
     }
+
+    private void showWrongAnswer() {
+        if(userAnswer != null) {
+            userAnswer.setTextColor(this.getResources().getColor(R.color.colorRed));
+            userAnswer.setBackgroundResource(R.drawable.rounded_button_wrong);
+        }
+        userAnswer = null;
+    }
+
+    private void showCorrectAnswer() {
+        userAnswer.setTextColor(this.getResources().getColor(R.color.colorGreen));
+        userAnswer.setBackgroundResource(R.drawable.rounded_button_correct);
+        userAnswer = null;
+    }
+
+    private void showCorrectAnswer(String answer) {
+        if(option_1.getText().equals(answer)) {
+            option_1.setTextColor(this.getResources().getColor(R.color.colorGreen));
+            option_1.setBackgroundResource(R.drawable.rounded_button_correct);
+        } else if(option_2.getText().equals(answer)) {
+            option_2.setTextColor(this.getResources().getColor(R.color.colorGreen));
+            option_2.setBackgroundResource(R.drawable.rounded_button_correct);
+        } else if(option_3.getText().equals(answer)) {
+            option_3.setTextColor(this.getResources().getColor(R.color.colorGreen));
+            option_3.setBackgroundResource(R.drawable.rounded_button_correct);
+        }
+    }
+
     /* Method for changing question */
     public void changeQuestion(Integer currentQue) {
         Log.d("QuizFragment", "change question entered");
@@ -383,17 +418,20 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                 pAnswer = option_1.getText().toString();
                 userResponse.add(pAnswer);
                 changeClickedButton(option_1);
+                userAnswer = option_1;
                 disableButton();
                 break;
             case R.id.option_2:
                 pAnswer = option_2.getText().toString();
                 userResponse.add(pAnswer);
+                userAnswer = option_2;
                 changeClickedButton(option_2);
                 disableButton();
                 break;
             case R.id.option_3:
                 pAnswer = option_3.getText().toString();
                 userResponse.add(pAnswer);
+                userAnswer = option_3;
                 changeClickedButton(option_3);
                 disableButton();
                 break;

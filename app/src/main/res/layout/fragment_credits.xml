@@ -12,8 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:background="@color/colorTransparentBlack"
         android:layout_margin="8dp"
+        android:padding="4dp"
         android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/logo_launch"/>
 
         <TextView
             android:id="@+id/application_name"
@@ -60,7 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="22sp"
+            android:textSize="18sp"
             android:textColor="@color/colorTransparentWhite"
             android:layout_gravity="center"
             android:text="jakob-grabner/Circle-Progress-View\nflorent37/MaterialTextField"/>
@@ -69,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="22sp"
+            android:textSize="18sp"
             android:textColor="@color/colorTransparentWhite"
             android:layout_gravity="center"
             android:text="alexfu/CountDownView\nSpecialCyCi/AndroidResideMenu"/>

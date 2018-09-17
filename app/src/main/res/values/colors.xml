@@ -13,8 +13,9 @@
     <color name="colorTransparentBlackExtra">#D8000000</color>
     <color name="colorTransparentSecondaryDark">#80140078</color>
     <color name="colorTransparentPrimaryLight">#804f5b62</color>
-    <color name="colorGreen">#00E676</color>
+    <color name="colorGreen">#00C853</color>
     <color name="colorBlue">#00B0FF</color>
+    <color name="colorRed">#f44336</color>
     <color name="colorTransparentGreen">#1A2ecc71</color>
     <color name="colorTransparentBlue">#1A00B0FF</color>
     <color name="colorTransparentRed">#1Ae74c3c</color>

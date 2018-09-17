@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -124,7 +125,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if(fragment instanceof QuizFragment) {
             new AlertDialog.Builder(this)
                     .setTitle("PRATITI")
-                    .setMessage("Are you sure you want to exit?")
+                    .setMessage("Are you sure you want to quit?")
                     .setCancelable(false)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -133,6 +134,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     })
                     .setNegativeButton("No", null)
                     .show();
+        } else {
+            finish();
         }
     }
     /* Reside menu right direction disabled */
@@ -295,7 +298,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /* Playing background service for quiz fragement */
         if(targetFragment instanceof QuizFragment) {
             svc = new Intent(this, BackgroundSoundService.class);
-            startService(svc);
+            if(Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+                BackgroundSoundServiceAPI26.enqueueWork(getApplicationContext(), new Intent());
+            } else {
+                startService(svc);
+            }
         }
         new Handler().post(new Runnable() {
             @Override
@@ -304,11 +311,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 fragmentTransaction.replace(R.id.frame_window, targetFragment);
-                try {
-                    fragmentTransaction.commit();
-                } catch (IllegalStateException e) {
-                    fragmentTransaction.commitAllowingStateLoss();
-                }
+                fragmentTransaction.commitAllowingStateLoss();
             }
         });
 

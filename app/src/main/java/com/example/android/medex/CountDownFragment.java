@@ -30,6 +30,7 @@ import com.google.firebase.functions.HttpsCallableResult;
 import com.special.ResideMenu.ResideMenu;
 import com.google.firebase.Timestamp;
 
+import java.security.acl.LastOwnerException;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -101,8 +102,9 @@ public class CountDownFragment extends Fragment {
 
         final CollectionReference quizRef = db.collection("quizes");
 
-        quizRef.orderBy("scheduledTime", Query.Direction.ASCENDING).limit(1)
+        quizRef.orderBy("scheduledTime", Query.Direction.ASCENDING)
                 .whereEqualTo("started", false)
+                .limit(1)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -151,6 +153,12 @@ public class CountDownFragment extends Fragment {
             public void onSuccess(HttpsCallableResult httpsCallableResult) {
                 long timestamp = (long) httpsCallableResult.getData();
                 current = new Date(timestamp);
+                try{
+                    Log.d(TAG, current.toString());
+                } catch (NullPointerException e) {
+                    Log.d(TAG, "Current date null");
+                }
+
                 if(current != null && nextQuiz != null) {
                     Log.w("Current Time", current.toString());
                     Log.w("Next Quiz Time", nextQuiz.toString());
@@ -179,15 +187,14 @@ public class CountDownFragment extends Fragment {
 
                     progressBar.setVisibility(View.INVISIBLE);
 
-                    if(total < 0) {
+                    if(total <= 0) {
                         countDownView.setVisibility(View.INVISIBLE);
-                        quizCountText.setText("No data found");
-                        quizCountText.setTextSize(24);
-                    } else if(total == 0) {
-                        countDownView.setVisibility(View.INVISIBLE);
-                        quizCountText.setText("No data found");
+                        quizCountText.setText("Waiting for quiz initialization");
                         quizCountText.setTextSize(24);
                     } else {
+                        countDownView.setVisibility(View.VISIBLE);
+                        quizCountText.setText(getString(R.string.next_quiz));
+                        quizCountText.setTextSize(30);
                         countDownView.reset();
                         countDownView.setStartDuration(total);
                         countDownView.start();
@@ -196,7 +203,7 @@ public class CountDownFragment extends Fragment {
                     progressBar.setVisibility(View.INVISIBLE);
                     Toast.makeText(parentActivity, "Check after some time", Toast.LENGTH_SHORT).show();
                     countDownView.setVisibility(View.INVISIBLE);
-                    quizCountText.setText("Waiting for quiz initialization");
+                    quizCountText.setText("No data found");
                     quizCountText.setTextSize(24);
                 }
             }
