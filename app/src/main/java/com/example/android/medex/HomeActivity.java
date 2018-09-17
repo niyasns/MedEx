@@ -134,8 +134,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     })
                     .setNegativeButton("No", null)
                     .show();
-        } else {
+        } else if (fragment instanceof HomeFragment){
             finish();
+        } else {
+            changeFragment(new HomeFragment());
         }
     }
     /* Reside menu right direction disabled */
@@ -298,9 +300,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /* Playing background service for quiz fragement */
         if(targetFragment instanceof QuizFragment) {
             svc = new Intent(this, BackgroundSoundService.class);
-            if(Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
-                BackgroundSoundServiceAPI26.enqueueWork(getApplicationContext(), new Intent());
+            if(Build.VERSION.SDK_INT == Build.VERSION_CODES.CUR_DEVELOPMENT) {
+                Log.d(TAG, "API LEVEL = " + Build.VERSION.SDK_INT);
+                BackgroundSoundServiceAPI26.enqueueWork(getBaseContext(), new Intent());
             } else {
+                Log.d(TAG, "ELSE API LEVEL = " + Build.VERSION.SDK_INT);
                 startService(svc);
             }
         }

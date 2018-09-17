@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private boolean isPermissionallowed;
     /**
      * variable to limit firebase settings to execute once.
      */
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initFirebase();
         initCalligraphy();
         initView();
-        isPermissionallowed = isStoragePermissionGranted();
         loginPageButton.setOnClickListener(this);
     }
     /*
@@ -124,21 +122,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /*
     Checking external storage permissions for downloading files.
      */
-    public boolean isStoragePermissionGranted() {
+    public void isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG,"Permission is granted");
-                return true;
+                loginAfterPermission();
             } else {
                 Log.v(TAG,"Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
             }
         }
         else { //permission is automatically granted on sdk<23 upon installation
             Log.v(TAG,"Permission is granted as per sdk < 23");
-            return true;
+            loginAfterPermission();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case 1:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    loginAfterPermission();
+                } else {
+                    loginPageButton.setBackgroundResource(R.drawable.rounded_button);
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Toast.makeText(this, "Please allow read and write permissions", Toast.LENGTH_LONG).show();
+                }
+                break;
+        }
+    }
+    /** Login function after checking storage permissions **/
+    public void loginAfterPermission() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            updateUI(currentUser);
+        } else {
+            progressBar.setVisibility(View.INVISIBLE);
+            Intent intent = new Intent(MainActivity.this, SignupActivity.class);
+            startActivity(intent);
         }
     }
 
@@ -148,22 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.view_pager_signup:
                 progressBar.setVisibility(View.VISIBLE);
                 loginPageButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
-                FirebaseUser currentUser = mAuth.getCurrentUser();
-                if(isPermissionallowed) {
-                    if (currentUser != null) {
-                        updateUI(currentUser);
-                    }else
-                    {
-                        progressBar.setVisibility(View.INVISIBLE);
-                        Intent intent = new Intent(MainActivity.this, SignupActivity.class);
-                        startActivity(intent);
-                    }
-                } else {
-                    isPermissionallowed = isStoragePermissionGranted();
-                    if(!isPermissionallowed) {
-                        Toast.makeText(this, "Please allow read and write permissions", Toast.LENGTH_LONG).show();
-                    }
-                }
+                isStoragePermissionGranted();
                 break;
         }
     }
