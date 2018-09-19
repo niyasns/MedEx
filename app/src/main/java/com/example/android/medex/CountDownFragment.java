@@ -73,7 +73,8 @@ public class CountDownFragment extends Fragment {
 
     @Override
     public void onDetach() {
-        super.onDetach();listenerRegistration.remove();
+        super.onDetach();
+        listenerRegistration.remove();
     }
 
     private void setupViews() {

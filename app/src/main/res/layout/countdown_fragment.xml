@@ -5,10 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
-    android:gravity="center">
+    android:background="@drawable/background">
 
     <RelativeLayout
+        android:id="@+id/latest_quiz"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
@@ -36,5 +36,11 @@
             android:padding="8dp" />
 
     </RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_below="@+id/latest_quiz"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="4dp"/>
 
 </RelativeLayout>
