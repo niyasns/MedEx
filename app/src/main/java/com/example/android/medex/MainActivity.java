@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
@@ -250,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(user != null)
         {
             CollectionReference usersReference = db.collection("users");
-            Query query = usersReference.whereEqualTo("id", user.getUid());
+            Query query = usersReference.whereEqualTo("email", user.getEmail());
             query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -266,6 +267,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Log.d(TAG, "New User found");
                             progressBar.setVisibility(View.INVISIBLE);
                             Intent intent = new Intent(MainActivity.this, SignupDetailActivity.class);
+                            for (UserInfo user: FirebaseAuth.getInstance().getCurrentUser().getProviderData()) {
+                                if (user.getProviderId().equals("facebook.com")) {
+                                    intent.putExtra("source","facebook");
+                                } else {
+                                    intent.putExtra("source", "google");
+                                }
+                            }
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                         }

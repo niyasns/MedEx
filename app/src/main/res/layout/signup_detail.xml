@@ -32,7 +32,8 @@
             android:layout_marginStart="8dp"
             android:src="@drawable/logo_main"
             app:civ_border_color="@color/colorSecondary"
-            app:civ_border_width="1dp" />
+            app:civ_border_width="1dp"
+            android:layout_marginLeft="8dp" />
 
         <com.github.florent37.materialtextfield.MaterialTextField
             android:id="@+id/usernameLayout"

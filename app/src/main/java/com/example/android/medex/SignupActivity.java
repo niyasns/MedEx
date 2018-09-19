@@ -253,6 +253,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
                 mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                 Log.w(TAG, "Google Sign in failed: signInResult:failed code = " + e);
+                progressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(this, "Please update google play services", Toast.LENGTH_LONG).show();
             }
         } else {
@@ -297,7 +298,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         if(user != null)
         {
             CollectionReference usersReference = db.collection("users");
-            Query query = usersReference.whereEqualTo("id", user.getUid());
+            Query query = usersReference.whereEqualTo("email", user.getEmail());
             query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {

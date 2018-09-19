@@ -22,6 +22,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -54,6 +55,7 @@ public class CountDownFragment extends Fragment {
 
     FirebaseFirestore db;
     ProgressBar progressBar;
+    ListenerRegistration listenerRegistration;
 
     public CountDownFragment() {
         // Required empty public constructor
@@ -67,6 +69,11 @@ public class CountDownFragment extends Fragment {
         setFirebaseListner();
         setQuiz();
         return parentView;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();listenerRegistration.remove();
     }
 
     private void setupViews() {
@@ -102,7 +109,7 @@ public class CountDownFragment extends Fragment {
 
         final CollectionReference quizRef = db.collection("quizes");
 
-        quizRef.orderBy("scheduledTime", Query.Direction.ASCENDING)
+        listenerRegistration = quizRef.orderBy("scheduledTime", Query.Direction.ASCENDING)
                 .whereEqualTo("started", false)
                 .limit(1)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -115,12 +122,17 @@ public class CountDownFragment extends Fragment {
                         }
 
                         if (value != null) {
+                            Log.d(TAG, "Change in scheduled time");
                             for (QueryDocumentSnapshot doc : value) {
                                 if (doc.get("scheduledTime") != null) {
                                     Timestamp timestamp = doc.getTimestamp("scheduledTime");
                                     nextQuiz = timestamp.toDate();
                                     Log.d("Quiz time changed", nextQuiz.toString());
-                                    getCurrentTime();
+                                    Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+                                    if(fragment instanceof CountDownFragment) {
+                                        Log.d(TAG,"Count Down Fragment updated");
+                                        getCurrentTime();
+                                    }
                                 }
                             }
                         } else {

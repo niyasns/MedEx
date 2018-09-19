@@ -239,7 +239,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     }
     /* Setting up quiz */
     private void setupQuiz() {
-
+        Log.d(TAG, "Setting Quiz up");
         progress = 0;
         userResponse = new ArrayList<>();
         currentQue = 0;

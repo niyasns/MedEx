@@ -64,7 +64,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     /* List to load quizes available from the database.*/
     static List<QuizSet> quizSets;
     /* Boolean to identify initial application instance. */
-    boolean isInital;
+    boolean isInital = true;
     /* Intent for background sound service*/
     Intent svc;
 
@@ -125,7 +125,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         if(fragment instanceof QuizFragment) {
             new AlertDialog.Builder(this)
                     .setTitle("PRATITI")
-                    .setMessage("Are you sure you want to quit?")
+                    .setMessage("Are you sure to interrupt quiz?")
                     .setCancelable(false)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -135,7 +135,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     .setNegativeButton("No", null)
                     .show();
         } else if (fragment instanceof HomeFragment){
-            finish();
+            new AlertDialog.Builder(this)
+                    .setTitle("PRATITI")
+                    .setMessage("Are you sure you want to quit?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
         } else {
             changeFragment(new HomeFragment());
         }
@@ -170,7 +180,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 if (documentSnapshot != null) {
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Quiz Fragment :" + (current instanceof QuizFragment));
-                    if (!(current instanceof QuizFragment)) {
+                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "isInitial:" + isInital);
+                    if (!(current instanceof QuizFragment) && !isInital) {
                         Long temp = documentSnapshot.getLong("qNo");
                         if(temp != null){
                             if(temp == 0) {
@@ -179,6 +190,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         } else {
                             Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Question number is null");
                         }
+                    } else {
+                        isInital = false;
                     }
 
                 } else {
@@ -212,7 +225,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
     /* Method to load quiz details from firebase */
     static private void firebaseLoadQuizSet() {
-
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final CollectionReference quizRef = db.collection("quizes");
         quizRef.whereEqualTo("completed",false)
@@ -223,6 +235,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         QuizSet quizSet = document.toObject(QuizSet.class);
+                        quizSets.clear();
                         quizSets.add(quizSet);
                         Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
                     }
@@ -300,9 +313,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         /* Playing background service for quiz fragement */
         if(targetFragment instanceof QuizFragment) {
             svc = new Intent(this, BackgroundSoundService.class);
-            if(Build.VERSION.SDK_INT == Build.VERSION_CODES.CUR_DEVELOPMENT) {
+            svc.putExtra("quiz_name", quizSets.get(0).getTitle());
+            svc.putExtra("quiz_timeout",quizSets.get(0).getTimeOut());
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Log.d(TAG, "API LEVEL = " + Build.VERSION.SDK_INT);
-                BackgroundSoundServiceAPI26.enqueueWork(getBaseContext(), new Intent());
+                startForegroundService(svc);
             } else {
                 Log.d(TAG, "ELSE API LEVEL = " + Build.VERSION.SDK_INT);
                 startService(svc);
