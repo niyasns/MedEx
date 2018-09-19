@@ -3,6 +3,7 @@ package com.example.android.medex;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -60,8 +61,11 @@ public class BackgroundSoundService extends Service {
                     .setSmallIcon(R.drawable.logo_launch)
                     .setAutoCancel(true)
                     .build();
-            Intent notifyIntent = new Intent();
+            Intent notifyIntent = new Intent(getBaseContext(), HomeActivity.class);
             notifyIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            notifyIntent.setAction(Intent.ACTION_MAIN);
+            notifyIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            notification.contentIntent = PendingIntent.getActivity(getBaseContext(), 0, notifyIntent, 0);
             startForeground(NOTIFICATION_ID, notification);
         }
 
