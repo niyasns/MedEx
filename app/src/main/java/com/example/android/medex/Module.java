@@ -13,14 +13,14 @@ public class Module {
     String fileName;
     String subject;
     Timestamp time;
-    String type;
+    Long type;
     String url;
 
     public Module() {
 
     }
 
-    public Module(String fileId, String fileName, String subject, Timestamp time, String type, String url) {
+    public Module(String fileId, String fileName, String subject, Timestamp time, Long type, String url) {
         this.fileId = fileId;
         this.fileName = fileName;
         this.subject = subject;
@@ -61,11 +61,11 @@ public class Module {
         this.time = time;
     }
 
-    public String getType() {
+    public Long getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Long type) {
         this.type = type;
     }
 

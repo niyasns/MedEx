@@ -69,7 +69,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
 
         holder.title.setText(moduleArrayList.get(position).getFileName());
         holder.sub_title.setText(moduleArrayList.get(position).getSubject());
-        holder.type.setText(moduleArrayList.get(position).getType());
+        holder.type.setText(String.valueOf(moduleArrayList.get(position).getType()));
         Date date = moduleArrayList.get(position).getTime().toDate();
         holder.time.setText(date.toString());
 

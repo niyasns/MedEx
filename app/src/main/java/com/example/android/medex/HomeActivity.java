@@ -62,7 +62,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     FirebaseFirestore db;
     FirebaseAuth mAuth;
     /* List to load quizes available from the database.*/
-    static List<QuizSet> quizSets;
+    static ArrayList<QuizSet> quizSets;
     /* Boolean to identify initial application instance. */
     boolean isInital = true;
     /* Intent for background sound service*/
@@ -228,14 +228,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final CollectionReference quizRef = db.collection("quizes");
         quizRef.whereEqualTo("completed",false)
-                .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(10)
+                .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(20)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
+                    quizSets.clear();
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         QuizSet quizSet = document.toObject(QuizSet.class);
-                        quizSets.clear();
                         quizSets.add(quizSet);
                         Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
                     }
@@ -362,7 +362,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         return resideMenu;
     }
     /* For accessing quiz list from fragments */
-    public List getQuizList() {
+    public ArrayList<QuizSet> getQuizList() {
         return quizSets;
     }
 

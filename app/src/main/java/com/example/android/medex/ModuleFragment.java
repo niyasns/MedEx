@@ -85,7 +85,7 @@ public class ModuleFragment extends android.app.Fragment {
                                     queryDocumentSnapshot.getString("fileName"),
                                     queryDocumentSnapshot.getString("subject"),
                                     queryDocumentSnapshot.getTimestamp("time"),
-                                    queryDocumentSnapshot.getString("type"),
+                                    queryDocumentSnapshot.getLong("type"),
                                     queryDocumentSnapshot.getString("url"));
 
                             moduleArrayList.add(module);

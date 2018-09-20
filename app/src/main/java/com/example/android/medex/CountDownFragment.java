@@ -1,23 +1,28 @@
 package com.example.android.medex;
 
 import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexfu.countdownview.CountDownView;
+import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,31 +36,33 @@ import com.google.firebase.functions.HttpsCallableResult;
 import com.special.ResideMenu.ResideMenu;
 import com.google.firebase.Timestamp;
 
-import java.security.acl.LastOwnerException;
-import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class CountDownFragment extends Fragment {
 
     private static final String TAG = "CountDown Firebase";
     private View parentView;
     private ResideMenu resideMenu;
+    private TextView no_data;
     private HomeActivity parentActivity;
 
     CountDownView countDownView;
+    RecyclerView recyclerView;
+    FrameLayout quizListFrame;
     TextView quizCountText;
     Date nextQuiz;
     Date current;
 
     QuizSet quizSet;
-    List QuizList;
+    static ArrayList<QuizSet> QuizList;
 
     FirebaseFirestore db;
     ProgressBar progressBar;
     ListenerRegistration listenerRegistration;
+    ListenerRegistration listenerRegistration_quizSet;
+
+    QuizRecyclerAdapter quizRecyclerAdapter;
 
     public CountDownFragment() {
         // Required empty public constructor
@@ -66,15 +73,72 @@ public class CountDownFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         parentView = inflater.inflate(R.layout.countdown_fragment, container, false);
         setupViews();
-        setFirebaseListner();
+        setFirebase();
+        setFirebaseListener();
         setQuiz();
+        setRecyclerView();
         return parentView;
+    }
+
+    /* Method to load quiz details from firebase */
+    static private void firebaseLoadQuizSet(final ProgressBar progressBar, final TextView no_data,
+                                            final RecyclerView recyclerView, final FrameLayout quizListFrame,
+                                            final QuizRecyclerAdapter quizRecyclerAdapter) {
+        Log.d(TAG, "Firebase lodaing quiz set");
+        progressBar.setVisibility(View.VISIBLE);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final CollectionReference quizRef = db.collection("quizes");
+        quizRef.whereEqualTo("completed",false)
+                .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(20)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    QuizList.clear();
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        QuizSet quizSet = document.toObject(QuizSet.class);
+                        QuizList.add(quizSet);
+                        Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+                    if(QuizList.isEmpty()) {
+                        recyclerView.setVisibility(View.INVISIBLE);
+                        quizListFrame.addView(no_data);
+                    } else {
+                        quizRecyclerAdapter.notifyDataSetChanged();
+                    }
+
+                } else {
+                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz list loading", "Error getting documents : " + task.getException());
+                }
+            }
+        });
+    }
+
+    private void setRecyclerView() {
+        recyclerView = parentView.findViewById(R.id.quiz_recycler_view);
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        if(QuizList.isEmpty()) {
+            recyclerView.setVisibility(View.INVISIBLE);
+            quizListFrame.addView(no_data);
+        } else {
+            Log.d(TAG, String.valueOf(QuizList.size()));
+            quizRecyclerAdapter = new QuizRecyclerAdapter(CountDownFragment.this, QuizList,progressBar);
+            recyclerView.setAdapter(quizRecyclerAdapter);
+        }
+    }
+
+    private void setFirebase() {
+        db = FirebaseFirestore.getInstance();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         listenerRegistration.remove();
+        listenerRegistration_quizSet.remove();
     }
 
     private void setupViews() {
@@ -92,6 +156,14 @@ public class CountDownFragment extends Fragment {
 
         countDownView = parentView.findViewById(R.id.countDownView);
         quizCountText = parentView.findViewById(R.id.quizTitle);
+        quizListFrame = parentView.findViewById(R.id.quizListFrame);
+
+        no_data = new TextView(parentActivity);
+        no_data.setText("No Data found");
+        no_data.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
+        no_data.setTypeface(raleway_regular);
+        no_data.setTextSize(24);
+        no_data.setGravity(Gravity.CENTER);
 
         heading.setTypeface(raleway_bold);
         quizCountText.setTypeface(raleway_regular);
@@ -105,8 +177,7 @@ public class CountDownFragment extends Fragment {
         });
     }
     /* Firebase listener for listening change in quiz set */
-    private void setFirebaseListner() {
-        db = FirebaseFirestore.getInstance();
+    private void setFirebaseListener() {
 
         final CollectionReference quizRef = db.collection("quizes");
 
@@ -142,6 +213,27 @@ public class CountDownFragment extends Fragment {
                         }
                     }
                 });
+
+        listenerRegistration_quizSet = quizRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if(e != null) {
+                    Crashlytics.log(Log.WARN, TAG + ": Quiz list change event", "Listen Failed");
+                    return;
+                }
+
+                if (queryDocumentSnapshots != null) {
+                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz list change event", "Quiz List changed");
+                    Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+                    if(fragment instanceof CountDownFragment) {
+                        Log.d(TAG,"Quiz recycler updated");
+                        firebaseLoadQuizSet(progressBar, no_data, recyclerView, quizListFrame, quizRecyclerAdapter);
+                    }
+                } else {
+                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz list change event", "Current data : null");
+                }
+            }
+        });
     }
     /* Setting count down timer for next quiz */
     private void setQuiz() {

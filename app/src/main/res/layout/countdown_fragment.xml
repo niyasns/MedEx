@@ -37,10 +37,18 @@
 
     </RelativeLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <FrameLayout
+        android:id="@+id/quizListFrame"
         android:layout_below="@+id/latest_quiz"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="4dp"/>
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/quiz_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="4dp"/>
+
+    </FrameLayout>
 
 </RelativeLayout>
