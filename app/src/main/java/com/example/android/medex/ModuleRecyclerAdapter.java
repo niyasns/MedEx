@@ -70,8 +70,8 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         holder.title.setText(moduleArrayList.get(position).getFileName());
         holder.sub_title.setText(moduleArrayList.get(position).getSubject());
         holder.type.setText(String.valueOf(moduleArrayList.get(position).getType()));
-        Date date = moduleArrayList.get(position).getTime().toDate();
-        holder.time.setText(date.toString());
+        SimpleDateFormat simpleDateFormat  =new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US);
+        holder.time.setText(simpleDateFormat.format(moduleArrayList.get(position).getTime().toDate()));
 
         Typeface raleway_bold = Typeface.createFromAsset(moduleFragment.getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(moduleFragment.getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
@@ -80,7 +80,6 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         holder.sub_title.setTypeface(raleway_regular);
         holder.type.setTypeface(raleway_regular);
         holder.time.setTypeface(raleway_regular);
-        holder.download.setTypeface(raleway_regular);
 
         holder.download.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.ads.AdRequest;
@@ -67,6 +68,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     boolean isInital = true;
     /* Intent for background sound service*/
     Intent svc;
+    private float x1, x2;
+    static final int MIN_DISTANCE = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -276,7 +279,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        return resideMenu.dispatchTouchEvent(ev);
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+        Log.d(TAG,"Touch event");
+        if(fragment instanceof HomeFragment) {
+            resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
+            return resideMenu.dispatchTouchEvent(ev);
+        } else {
+            return resideMenu.dispatchTouchEvent(ev);
+        }
     }
 
     @Override

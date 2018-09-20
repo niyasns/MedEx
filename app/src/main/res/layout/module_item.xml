@@ -14,53 +14,61 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_margin="8dp">
+        android:orientation="horizontal"
+        android:layout_margin="8dp"
+        android:weightSum="3">
 
-        <TextView
-            android:id="@+id/title_item"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Module III : Anatomy"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorSecondary" />
-
-        <TextView
-            android:id="@+id/subtitle_item"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SubTitle"
-            android:textSize="20sp"
-            android:textColor="@color/colorTransparentWhite" />
-
-        <TextView
-            android:id="@+id/type_item"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="type"
-            android:textSize="18sp"
-            android:textColor="@color/colorTransparentWhite" />
-
-        <TextView
-            android:id="@+id/time_item"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="22-10-2017"
-            android:textSize="18sp"
-            android:textColor="@color/colorTransparentWhite" />
-
-        <Button
-            android:id="@+id/download_item"
+        <LinearLayout
+            android:id="@+id/dataLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:layout_marginTop="8dp"
-            android:typeface="monospace"
-            android:textStyle="bold"
-            android:background="@drawable/rounded_button"
-            android:textColor="@color/colorSecondary"
-            android:text="Download"/>
+            android:orientation="vertical"
+            android:layout_weight="2">
+
+            <TextView
+                android:id="@+id/title_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Module III : Anatomy"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorSecondary" />
+
+            <TextView
+                android:id="@+id/subtitle_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SubTitle"
+                android:textSize="20sp"
+                android:textColor="@color/colorTransparentWhite" />
+
+            <TextView
+                android:id="@+id/type_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="type"
+                android:textSize="18sp"
+                android:textColor="@color/colorTransparentWhite" />
+
+            <TextView
+                android:id="@+id/time_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="22-10-2017"
+                android:textSize="18sp"
+                android:textColor="@color/colorTransparentWhite" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/download_item"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:padding="8dp"
+            android:src="@drawable/ic_open" />
 
 
     </LinearLayout>

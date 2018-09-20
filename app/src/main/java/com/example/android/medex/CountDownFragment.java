@@ -105,7 +105,9 @@ public class CountDownFragment extends Fragment {
                         recyclerView.setVisibility(View.INVISIBLE);
                         quizListFrame.addView(no_data);
                     } else {
-                        quizRecyclerAdapter.notifyDataSetChanged();
+                        if(quizRecyclerAdapter != null) {
+                            quizRecyclerAdapter.notifyDataSetChanged();
+                        }
                     }
 
                 } else {
