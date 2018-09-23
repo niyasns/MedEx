@@ -24,9 +24,15 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -39,8 +45,13 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.special.ResideMenu.ResideMenu;
 import com.special.ResideMenu.ResideMenuItem;
 
+import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -61,15 +72,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ResideMenuItem itemCredits;
     /* Firebase variables */
     FirebaseFirestore db;
+    FirebaseDatabase firebaseDatabase;
     FirebaseAuth mAuth;
     /* List to load quizes available from the database.*/
     static ArrayList<QuizSet> quizSets;
+    /*List to load year details for module fragment */
+    static ArrayList<Year> yearList;
+    /*List to load year details for module fragment */
+    static ArrayList<Year> tempList;
     /* Boolean to identify initial application instance. */
     boolean isInital = true;
     /* Intent for background sound service*/
     Intent svc;
     private float x1, x2;
-    static final int MIN_DISTANCE = 50;
+    static final int MIN_DISTANCE = 200;
+    private long startClickTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,11 +122,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void initQuizList() {
 
         quizSets = new ArrayList<>();
+        yearList = new ArrayList<>();
+        tempList =new ArrayList<>();
         quizSets.clear();
+        yearList.clear();
     }
     /* Initializing AdView */
     private void initAdView() {
-
+        MobileAds.initialize(this, "ca-app-pub-5476381757988116~3744426550");
         AdView mAdview = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdview.loadAd(adRequest);
@@ -157,10 +177,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static private void setupNavigation() {
 
         resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
+        resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
     }
     /* Setting up firebase listeners for quiz set and quiz start events */
     private void setupFirebase() {
-
+        firebaseDatabase = FirebaseDatabase.getInstance();
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         new QuizSetLoadAsync().execute();
@@ -170,7 +191,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     /* Firebase listener to trap quiz start events */
     private void firebaseQuizStartListener() {
 
-        final DocumentReference documentReference = db.collection("config").document("currentQuiz");
+        /*final DocumentReference documentReference = db.collection("config").document("currentQuiz");
         documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -200,6 +221,38 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Current data : null");
                 }
+            }
+        });*/
+
+        DatabaseReference databaseReference = firebaseDatabase.getReference("qNo");
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Fragment current = getFragmentManager().findFragmentById(R.id.frame_window);
+                Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Quiz Fragment :" + (current instanceof QuizFragment));
+                Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "isInitial:" + isInital);
+                Long temp = dataSnapshot.getValue(Long.class);
+                Log.d(TAG, "Value is: " + temp);
+
+                if (!(current instanceof QuizFragment) && !isInital) {
+                    if(temp != null){
+                        if(temp == 0) {
+                            changeFragment(new QuizFragment());
+                        }
+                    } else {
+                        Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Question number is null");
+                    }
+                } else {
+                    isInital = false;
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
+
             }
         });
     }
@@ -248,6 +301,46 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
+    /* Method to load subject details for modules fragment */
+    static private void firebaseLoadSubjects() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final CollectionReference yearRef = db.collection("years");
+        yearRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()) {
+                    Log.d(TAG, "Year details Loading");
+                    Integer j = 0;
+
+                    ArrayList<Object> subject;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        HashMap<String, ArrayList<String>> subjectTopicHash = new HashMap<>();
+                        HashMap<String, ArrayList<String>> hashMap = new HashMap<>();
+                        ArrayList<String> subjectList = new ArrayList<>();
+                        subject = (ArrayList<Object>) document.get("subs");
+                        for(int i = 0; i < subject.size(); i++) {
+                            hashMap = (HashMap<String, ArrayList<String>>) subject.get(i);
+                            String title = String.valueOf(hashMap.get("title"));
+                            ArrayList<String> topics = hashMap.get("topics");
+                            subjectList.add(title);
+                            subjectTopicHash.put(title, topics);
+                        }
+                        Log.d(TAG, "\nTitle: " + subjectList + "\nTopics:" + subjectTopicHash);
+                        Year year = new Year(subjectList, subjectTopicHash);
+                        yearList.add(year);
+                        hashMap.clear();
+                        for (j = 0; j < yearList.size(); j++) {
+                            Log.d(TAG, yearList.get(j).getTopics().toString());
+                        }
+
+                    }
+                    Log.d(TAG, "Complete subject list : \n" + yearList.get(0).getTopics().toString());
+                } else {
+                    Log.d(TAG, "Year details loading unsuccessful");
+                }
+            }
+        });
+    }
     /* Setting up reside menu */
     private void setupMenu() {
 
@@ -279,14 +372,34 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+       /* Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
         Log.d(TAG,"Touch event");
-        if(fragment instanceof HomeFragment) {
-            resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
-            return resideMenu.dispatchTouchEvent(ev);
-        } else {
-            return resideMenu.dispatchTouchEvent(ev);
-        }
+        switch(ev.getAction())
+        {
+            case MotionEvent.ACTION_DOWN:
+                x1 = ev.getX();
+                break;
+            case MotionEvent.ACTION_UP:
+                x2 = ev.getX();
+                float deltaX = x2 - x1;
+                if (Math.abs(deltaX) > MIN_DISTANCE)
+                {
+                    Toast.makeText(this, "left2right swipe", Toast.LENGTH_SHORT).show ();
+                    if(!(fragment instanceof HomeFragment)) {
+                        if (resideMenu.isOpened()){
+                            resideMenu.closeMenu();
+                        }
+                        resideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
+                    } else {
+                    }
+                }
+                else
+                {
+                    // consider as something else - a screen tap for example
+                }
+                break;
+        }*/
+        return resideMenu.dispatchTouchEvent(ev);
     }
 
     @Override
@@ -357,6 +470,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected Void doInBackground(Void... voids) {
             firebaseLoadQuizSet();
+            firebaseLoadSubjects();
             return null;
         }
 
@@ -375,6 +489,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     public ArrayList<QuizSet> getQuizList() {
         return quizSets;
     }
-
+    /* For accessing quiz from fragments */
+    public static ArrayList<Year> getYearSets() {
+        return yearList;
+    }
 }
 

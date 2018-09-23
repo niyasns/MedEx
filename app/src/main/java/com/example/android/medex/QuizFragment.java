@@ -25,6 +25,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -74,6 +79,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     CorrectDialog correctDialog;
     CompleteDialog completeDialog;
     /* Firebase instances*/
+    FirebaseDatabase firebaseDatabase;
     FirebaseFirestore db;
     FirebaseAuth mAuth;
     /* Current question number */
@@ -88,6 +94,8 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     String user_id;
     /* ListenerRegistraion used to stop listener during fragment detach */
     ListenerRegistration listenerRegistration;
+    DatabaseReference databaseReference;
+    ValueEventListener valueEventListener;
 
     Button userAnswer;
 
@@ -158,6 +166,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         super.onDetach();
         Log.d(TAG, "OnDetach");
         listenerRegistration.remove();
+        databaseReference.removeEventListener(valueEventListener);
     }
     /**
      * Firebase Listener for question number events.
@@ -165,8 +174,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
      * When an event occurs, it changes the current question.
      */
     private void setupFirebaseRealtimeListner() {
-
-        db = FirebaseFirestore.getInstance();
+        /*db = FirebaseFirestore.getInstance();
         final DocumentReference documentReference = db.collection("config").document("currentQuiz");
         listenerRegistration = documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -200,6 +208,36 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
                 } else {
                     Crashlytics.log(Log.DEBUG, TAG, "Current data : null");
                 }
+            }
+        });*/
+
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference("qNo");
+        valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(isCorrect) {
+                    Long temp = dataSnapshot.getValue(Long.class);
+                    if (temp != null) {
+                        currentQue = temp.intValue();
+                        Log.d(TAG, currentQue + " Current Que");
+                    }
+                    if(correctDialog.isShowing()) {
+                        correctDialog.dismiss();
+                    }
+                    if(temp != null) {
+                        if(temp != -1 && isCorrect.equals(true)) {
+                            changeQuestion(currentQue);
+                        }
+                    } else {
+                        Crashlytics.log(Log.DEBUG, TAG, "Current question value is null");
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }
