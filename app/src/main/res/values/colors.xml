@@ -16,11 +16,11 @@
     <color name="colorGreen">#00C853</color>
     <color name="colorBlue">#00B0FF</color>
     <color name="colorRed">#f44336</color>
-    <color name="colorTransparentGreen">#1A2ecc71</color>
-    <color name="colorTransparentBlue">#1A00B0FF</color>
-    <color name="colorTransparentRed">#1Ae74c3c</color>
-    <color name="colorTransparentTurquoise">#1A1abc9c</color>
-    <color name="colorTransparentViolet">#1A9b59b6</color>
+    <color name="colorJuneBud">#66b7d142</color>
+    <color name="colorDollarBill">#6681c14b</color>
+    <color name="colorSeaGreen">#662e933c</color>
+    <color name="colorDarkSpringGreen">#66297045</color>
+    <color name="colorEnglishGreen">#66204e4a</color>
     <color name="colorBlack">#263238</color>
     <color name="colorGrey">#37474F</color>
 </resources>

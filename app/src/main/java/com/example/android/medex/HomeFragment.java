@@ -23,7 +23,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
     Button quiz;
     Button module;
     Button Profile;
-    Button Credits;
+    Button Videos;
     Button Logout;
     TextView heading;
     FirebaseAuth mAuth;
@@ -54,7 +54,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
         quiz = parentView.findViewById(R.id.quiz);
         module = parentView.findViewById(R.id.modules);
         Profile = parentView.findViewById(R.id.profile);
-        Credits = parentView.findViewById(R.id.credits);
+        Videos = parentView.findViewById(R.id.videos);
         Logout = parentView.findViewById(R.id.logout);
         parentActivity.stopService(new Intent(parentActivity, BackgroundSoundService.class));
 
@@ -63,11 +63,11 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
         module.setTypeface(raleway_regular);
         Profile.setTypeface(raleway_regular);
         Logout.setTypeface(raleway_regular);
-        Credits.setTypeface(raleway_regular);
+        Videos.setTypeface(raleway_regular);
         quiz.setOnClickListener(this);
         module.setOnClickListener(this);
         Profile.setOnClickListener(this);
-        Credits.setOnClickListener(this);
+        Videos.setOnClickListener(this);
         Logout.setOnClickListener(this);
 
         resideMenu = parentActivity.getResideMenu();
@@ -92,7 +92,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
             case R.id.profile:
                 changeFragment(new ProfileFragment());
                 break;
-            case R.id.credits:
+            case R.id.videos:
                 changeFragment(new CreditsFragment());
                 break;
             case R.id.logout:

@@ -177,7 +177,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static private void setupNavigation() {
 
         resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
-        resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
     }
     /* Setting up firebase listeners for quiz set and quiz start events */
     private void setupFirebase() {
@@ -372,33 +371,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-       /* Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
-        Log.d(TAG,"Touch event");
-        switch(ev.getAction())
-        {
-            case MotionEvent.ACTION_DOWN:
-                x1 = ev.getX();
-                break;
-            case MotionEvent.ACTION_UP:
-                x2 = ev.getX();
-                float deltaX = x2 - x1;
-                if (Math.abs(deltaX) > MIN_DISTANCE)
-                {
-                    Toast.makeText(this, "left2right swipe", Toast.LENGTH_SHORT).show ();
-                    if(!(fragment instanceof HomeFragment)) {
-                        if (resideMenu.isOpened()){
-                            resideMenu.closeMenu();
-                        }
-                        resideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
-                    } else {
-                    }
-                }
-                else
-                {
-                    // consider as something else - a screen tap for example
-                }
-                break;
-        }*/
         return resideMenu.dispatchTouchEvent(ev);
     }
 

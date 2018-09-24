@@ -20,7 +20,7 @@
         android:gravity="center"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@color/colorTransparentGreen"/>
+        android:background="@color/colorEnglishGreen"/>
     <Button
         android:id="@+id/modules"
         android:layout_width="match_parent"
@@ -31,7 +31,18 @@
         android:gravity="center"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@color/colorTransparentBlue"/>
+        android:background="@color/colorDarkSpringGreen"/>
+    <Button
+        android:id="@+id/videos"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Videos"
+        android:textSize="36sp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:textColor="@color/colorTransparentWhite"
+        android:background="@color/colorSeaGreen"/>
     <Button
         android:id="@+id/profile"
         android:layout_width="match_parent"
@@ -42,18 +53,7 @@
         android:gravity="center"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@color/colorTransparentRed"/>
-    <Button
-        android:id="@+id/credits"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:text="Credits"
-        android:textSize="36sp"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:textColor="@color/colorTransparentWhite"
-        android:background="@color/colorTransparentTurquoise"/>
+        android:background="@color/colorDollarBill"/>
     <Button
         android:id="@+id/logout"
         android:layout_width="match_parent"
@@ -64,7 +64,7 @@
         android:gravity="center"
         android:layout_gravity="center"
         android:textColor="@color/colorTransparentWhite"
-        android:background="@color/colorTransparentViolet"/>
+        android:background="@color/colorJuneBud"/>
 
 
 </LinearLayout>
