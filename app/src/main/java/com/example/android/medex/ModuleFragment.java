@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
@@ -58,11 +59,13 @@ public class ModuleFragment extends android.app.Fragment {
     Spinner moduleYear;
     Spinner moduleSubject;
     Spinner moduleTopic;
+    Button filterButton;
 
     String year = null;
-    String subject = null;
+    String subject = "Subject";
     Integer yearIndex = null;
-    String topic = null;
+    Integer yearFirebase = 1;
+    String topic = "Topic";
 
     ArrayList<Module> moduleArrayList;
     ModuleRecyclerAdapter moduleRecyclerAdapter;
@@ -82,8 +85,66 @@ public class ModuleFragment extends android.app.Fragment {
         setupRecyclerView();
         setupFirebase();
         loadDataFromFirestore();
+        handleFilter();
 
         return parentView;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+    }
+
+    private void handleFilter() {
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!subject.equals("Subject") && !topic.equals("Topic")) {
+
+                    final ArrayList<Module> moduleArrayListNew = new ArrayList<>();
+                    progressBar.setVisibility(View.VISIBLE);
+                    db.collection("files")
+                            .whereEqualTo("type",yearFirebase)
+                            .whereEqualTo("subject", subject)
+                            .whereEqualTo("topic", topic)
+                            .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()){
+                                Log.d(TAG, queryDocumentSnapshot.toString());
+                                Module module = new Module(queryDocumentSnapshot.getString("fileId"),
+                                        queryDocumentSnapshot.getString("fileName"),
+                                        queryDocumentSnapshot.getString("subject"),
+                                        queryDocumentSnapshot.getTimestamp("time"),
+                                        queryDocumentSnapshot.getLong("type"),
+                                        queryDocumentSnapshot.getString("url"));
+
+                                moduleArrayListNew.add(module);
+
+                            }
+                            Log.d(TAG, moduleArrayListNew.toString());
+                            progressBar.setVisibility(View.INVISIBLE);
+
+                            if(moduleArrayListNew.isEmpty()) {
+                                recyclerView.setVisibility(View.INVISIBLE);
+                                frameLayout.removeAllViews();
+                                frameLayout.addView(no_data);
+                                no_data.setVisibility(View.VISIBLE);
+                            } else {
+                                Log.d(TAG, "Entered Recycler refreshing");
+                                no_data.setVisibility(View.INVISIBLE);
+                                frameLayout.removeAllViews();
+                                frameLayout.addView(recyclerView);
+                                recyclerView.setVisibility(View.VISIBLE);
+                                moduleRecyclerAdapter = new ModuleRecyclerAdapter(ModuleFragment.this, moduleArrayListNew, storage, progressBar);
+                                recyclerView.setAdapter(moduleRecyclerAdapter);
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -174,15 +235,17 @@ public class ModuleFragment extends android.app.Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if(yearIndex != null) {
                     subject = parent.getItemAtPosition(position).toString().trim();
-                    ArrayList<String> topics = subjectList.get(yearIndex).getTopics().get(subject);
-                    if(topics.isEmpty()) {
-                        ArrayAdapter<String> topicAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, topicTemp);
-                        topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        moduleTopic.setAdapter(topicAdapter);
-                    } else {
-                        ArrayAdapter<String> topicAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, topics);
-                        topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        moduleTopic.setAdapter(topicAdapter);
+                    if(!subjectList.isEmpty()) {
+                        ArrayList<String> topics = subjectList.get(yearIndex).getTopics().get(subject);
+                        if(topics.isEmpty()) {
+                            ArrayAdapter<String> topicAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, topicTemp);
+                            topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            moduleTopic.setAdapter(topicAdapter);
+                        } else {
+                            ArrayAdapter<String> topicAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, topics);
+                            topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            moduleTopic.setAdapter(topicAdapter);
+                        }
                     }
                 }
             }
@@ -208,16 +271,19 @@ public class ModuleFragment extends android.app.Fragment {
 
     private void handleSubject(Integer index) {
         yearIndex = index;
-        ArrayList<String> subjects = subjectList.get(index).getSubList();
-        if(subjects.isEmpty()) {
-            String[] topicTemp = {"Subject"};
-            ArrayAdapter<String> subjectAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, topicTemp);
-            subjectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            moduleSubject.setAdapter(subjectAdapter);
-        } else {
-            ArrayAdapter<String> subjectAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, subjects);
-            subjectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            moduleSubject.setAdapter(subjectAdapter);
+        yearFirebase = index + 1;
+        if(!subjectList.isEmpty()) {
+            ArrayList<String> subjects = subjectList.get(index).getSubList();
+            if(subjects.isEmpty()) {
+                String[] topicTemp = {"Subject"};
+                ArrayAdapter<String> subjectAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, topicTemp);
+                subjectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                moduleSubject.setAdapter(subjectAdapter);
+            } else {
+                ArrayAdapter<String> subjectAdapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item, subjects);
+                subjectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                moduleSubject.setAdapter(subjectAdapter);
+            }
         }
     }
     /* Loading files data from firebase */
@@ -245,6 +311,7 @@ public class ModuleFragment extends android.app.Fragment {
 
                         if(moduleArrayList.isEmpty()) {
                             recyclerView.setVisibility(View.INVISIBLE);
+                            frameLayout.removeAllViews();
                             frameLayout.addView(no_data);
                         } else {
                             moduleRecyclerAdapter = new ModuleRecyclerAdapter(ModuleFragment.this, moduleArrayList, storage, progressBar);
@@ -290,6 +357,7 @@ public class ModuleFragment extends android.app.Fragment {
         moduleYear = parentView.findViewById(R.id.module_year);
         moduleSubject = parentView.findViewById(R.id.module_sub);
         moduleTopic = parentView.findViewById(R.id.module_topic);
+        filterButton = parentView.findViewById(R.id.filter_button);
 
         subjectList = HomeActivity.getYearSets();
 

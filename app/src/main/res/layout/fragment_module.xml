@@ -64,6 +64,7 @@
                 android:background="@drawable/rounded_spinner" />
 
             <Button
+                android:id="@+id/filter_button"
                 android:layout_width="0dp"
                 android:layout_height="45dp"
                 android:layout_margin="4dp"
