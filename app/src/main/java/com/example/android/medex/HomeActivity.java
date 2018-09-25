@@ -70,6 +70,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ResideMenuItem itemProfile;
     ResideMenuItem itemLogout;
     ResideMenuItem itemCredits;
+    ResideMenuItem itemVideos;
     /* Firebase variables */
     FirebaseFirestore db;
     FirebaseDatabase firebaseDatabase;
@@ -351,6 +352,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         itemHome = new ResideMenuItem(this, R.drawable.ic_home, "Home");
         itemQuiz = new ResideMenuItem(this, R.drawable.ic_quiz, "Quiz");
         itemModule = new ResideMenuItem(this, R.drawable.ic_module, "Modules");
+        itemVideos = new ResideMenuItem(this, R.drawable.ic_video, "Videos");
         itemProfile = new ResideMenuItem(this, R.drawable.ic_profile, "Profile");
         itemCredits = new ResideMenuItem(this, R.drawable.ic_credits, "Credits");
         itemLogout = new ResideMenuItem(this, R.drawable.ic_logout, "Logout");
@@ -358,6 +360,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         itemHome.setOnClickListener(this);
         itemQuiz.setOnClickListener(this);
         itemModule.setOnClickListener(this);
+        itemVideos.setOnClickListener(this);
         itemProfile.setOnClickListener(this);
         itemCredits.setOnClickListener(this);
         itemLogout.setOnClickListener(this);
@@ -365,6 +368,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         resideMenu.addMenuItem(itemHome, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemQuiz, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemModule, ResideMenu.DIRECTION_LEFT);
+        resideMenu.addMenuItem(itemVideos, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemProfile, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemCredits, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemLogout, ResideMenu.DIRECTION_LEFT);
@@ -384,6 +388,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             changeFragment(new CountDownFragment());
         } else if (v == itemModule) {
             changeFragment(new ModuleFragment());
+        } else if (v == itemVideos) {
+            changeFragment(new VideosFragment());
         } else if (v == itemProfile) {
             changeFragment(new ProfileFragment());
         } else if (v == itemCredits) {

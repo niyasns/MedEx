@@ -32,13 +32,13 @@ public class SliderAdapter extends PagerAdapter{
     /* Slider headings */
     public String[] slide_headings = {
             "PRATITI",
-            "THINK!!",
+            "VIDEOS",
             "DOC REPO"
     };
     /* Slider sub headings */
     public String[] slide_descs = {
-            "An application by Govt. Medical College, Trivandrum",
-            "A quiz application for medical students",
+            "An application by \nSFI Thiruvananthapuram \nMedical College Unit",
+            "Watch videos for better understanding",
             "Download study modules effortlessly",
     };
 
