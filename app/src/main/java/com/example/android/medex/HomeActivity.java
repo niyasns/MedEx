@@ -177,6 +177,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static private void setupNavigation() {
 
         resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
+        resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
     }
     /* Setting up firebase listeners for quiz set and quiz start events */
     private void setupFirebase() {

@@ -12,7 +12,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:background="@color/colorTransparentBlack">
+        android:background="@color/colorTransparentBlack"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/quizTitle"

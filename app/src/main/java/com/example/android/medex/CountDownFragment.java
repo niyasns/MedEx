@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,7 +46,9 @@ public class CountDownFragment extends Fragment {
     private View parentView;
     private ResideMenu resideMenu;
     private TextView no_data;
+    private TextView no_quiz;
     private HomeActivity parentActivity;
+    private RelativeLayout latestQuiz;
 
     CountDownView countDownView;
     RecyclerView recyclerView;
@@ -53,6 +56,8 @@ public class CountDownFragment extends Fragment {
     TextView quizCountText;
     Date nextQuiz;
     Date current;
+
+    Typeface raleway_regular;
 
     QuizSet quizSet;
     static ArrayList<QuizSet> QuizList;
@@ -147,7 +152,7 @@ public class CountDownFragment extends Fragment {
 
         parentActivity = (HomeActivity) getActivity();
         Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
-        Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
+        raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
 
         Button button = parentActivity.findViewById(R.id.menu_button);
         TextView heading = parentActivity.findViewById(R.id.heading);
@@ -159,13 +164,23 @@ public class CountDownFragment extends Fragment {
         countDownView = parentView.findViewById(R.id.countDownView);
         quizCountText = parentView.findViewById(R.id.quizTitle);
         quizListFrame = parentView.findViewById(R.id.quizListFrame);
+        latestQuiz = parentView.findViewById(R.id.latest_quiz);
+        no_quiz = parentView.findViewById(R.id.status);
+        no_data = parentView.findViewById(R.id.status);
 
-        no_data = new TextView(parentActivity);
         no_data.setText("No Data found");
         no_data.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
         no_data.setTypeface(raleway_regular);
         no_data.setTextSize(24);
         no_data.setGravity(Gravity.CENTER);
+
+
+        no_quiz.setText("Waiting for quiz initialization");
+        no_quiz.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
+        no_quiz.setTypeface(raleway_regular);
+        no_quiz.setTextSize(24);
+        no_quiz.setGravity(Gravity.CENTER);
+        no_quiz.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
 
         heading.setTypeface(raleway_bold);
         quizCountText.setTypeface(raleway_regular);
@@ -296,10 +311,17 @@ public class CountDownFragment extends Fragment {
 
                     if(total <= 0) {
                         countDownView.setVisibility(View.INVISIBLE);
-                        quizCountText.setText("Waiting for quiz initialization");
-                        quizCountText.setTextSize(24);
+                        quizCountText.setVisibility(View.INVISIBLE);
+                        latestQuiz.removeAllViews();
+                        no_quiz.setVisibility(View.VISIBLE);
+                        latestQuiz.addView(no_quiz);
+
                     } else {
+                        latestQuiz.removeAllViews();
+                        latestQuiz.addView(countDownView);
+                        latestQuiz.addView(quizCountText);
                         countDownView.setVisibility(View.VISIBLE);
+                        quizCountText.setVisibility(View.VISIBLE);
                         quizCountText.setText(getString(R.string.next_quiz));
                         quizCountText.setTextSize(30);
                         countDownView.reset();
@@ -310,8 +332,9 @@ public class CountDownFragment extends Fragment {
                     progressBar.setVisibility(View.INVISIBLE);
                     Toast.makeText(parentActivity, "Check after some time", Toast.LENGTH_SHORT).show();
                     countDownView.setVisibility(View.INVISIBLE);
-                    quizCountText.setText("No data found");
-                    quizCountText.setTextSize(24);
+                    quizCountText.setVisibility(View.INVISIBLE);
+                    latestQuiz.removeAllViews();
+                    latestQuiz.addView(no_data);
                 }
             }
         });

@@ -93,7 +93,7 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
                 changeFragment(new ProfileFragment());
                 break;
             case R.id.videos:
-                changeFragment(new CreditsFragment());
+                changeFragment(new VideosFragment());
                 break;
             case R.id.logout:
                 logOut();
