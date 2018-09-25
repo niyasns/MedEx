@@ -43,7 +43,7 @@ import java.util.HashMap;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-public class ModuleFragment extends android.app.Fragment {
+public class ModuleFragment extends android.support.v4.app.Fragment {
 
     private static final String TAG = "ModuleFragment";
     private View parentView;

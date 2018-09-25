@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ProfileFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemSelectedListener {
+public class ProfileFragment extends android.support.v4.app.Fragment implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     private static final String TAG = "ProfileFragment";
     private View parentView;

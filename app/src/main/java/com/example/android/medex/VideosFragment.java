@@ -31,7 +31,7 @@ import com.special.ResideMenu.ResideMenu;
 
 import java.util.ArrayList;
 
-public class VideosFragment extends android.app.Fragment {
+public class VideosFragment extends android.support.v4.app.Fragment {
 
     private static final String TAG = "ModuleFragment";
     private View parentView;

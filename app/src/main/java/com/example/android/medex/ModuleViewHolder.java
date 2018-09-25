@@ -12,7 +12,7 @@ public class ModuleViewHolder extends RecyclerView.ViewHolder {
     public TextView sub_title;
     public TextView type;
     public TextView time;
-    public ImageButton download;
+    public Button download;
 
     public ModuleViewHolder(View itemView) {
         super(itemView);

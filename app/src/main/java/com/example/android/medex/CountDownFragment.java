@@ -1,6 +1,6 @@
 package com.example.android.medex;
 
-import android.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -40,7 +40,7 @@ import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class CountDownFragment extends Fragment {
+public class CountDownFragment extends android.support.v4.app.Fragment {
 
     private static final String TAG = "CountDown Firebase";
     private View parentView;
@@ -217,7 +217,7 @@ public class CountDownFragment extends Fragment {
                                     Timestamp timestamp = doc.getTimestamp("scheduledTime");
                                     nextQuiz = timestamp.toDate();
                                     Log.d("Quiz time changed", nextQuiz.toString());
-                                    Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+                                    android.support.v4.app.Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
                                     if(fragment instanceof CountDownFragment) {
                                         Log.d(TAG,"Count Down Fragment updated");
                                         getCurrentTime();
@@ -241,7 +241,7 @@ public class CountDownFragment extends Fragment {
 
                 if (queryDocumentSnapshots != null) {
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz list change event", "Quiz List changed");
-                    Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+                    android.support.v4.app.Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
                     if(fragment instanceof CountDownFragment) {
                         Log.d(TAG,"Quiz recycler updated");
                         firebaseLoadQuizSet(progressBar, no_data, recyclerView, quizListFrame, quizRecyclerAdapter);

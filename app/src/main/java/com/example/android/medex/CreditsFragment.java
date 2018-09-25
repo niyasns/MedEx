@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class CreditsFragment extends Fragment {
+public class CreditsFragment extends android.support.v4.app.Fragment {
 
     private View parentView;
 

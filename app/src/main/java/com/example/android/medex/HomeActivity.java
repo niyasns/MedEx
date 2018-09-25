@@ -2,9 +2,8 @@ package com.example.android.medex;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -95,8 +94,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.home_activity);
 
         initView();
-        initQuizList();
         initAdView();
+        initQuizList();
         setupMenu();
         setupFirebase();
         /* Load home fragemnt initially */
@@ -132,7 +131,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void initAdView() {
         MobileAds.initialize(this, "ca-app-pub-5476381757988116~3744426550");
         AdView mAdview = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
         mAdview.loadAd(adRequest);
     }
 
@@ -145,7 +145,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
 
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.frame_window);
+        android.support.v4.app.Fragment  fragment = getSupportFragmentManager().findFragmentById(R.id.frame_window);
         if(fragment instanceof QuizFragment) {
             new AlertDialog.Builder(this)
                     .setTitle("PRATITI")
@@ -192,44 +192,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     /* Firebase listener to trap quiz start events */
     private void firebaseQuizStartListener() {
 
-        /*final DocumentReference documentReference = db.collection("config").document("currentQuiz");
-        documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if(e != null) {
-                    Crashlytics.log(Log.WARN, TAG + ": Quiz start event", "Listen Failed");
-                    return;
-                }
-
-                Fragment current = getFragmentManager().findFragmentById(R.id.frame_window);
-
-                if (documentSnapshot != null) {
-                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Quiz Fragment :" + (current instanceof QuizFragment));
-                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "isInitial:" + isInital);
-                    if (!(current instanceof QuizFragment) && !isInital) {
-                        Long temp = documentSnapshot.getLong("qNo");
-                        if(temp != null){
-                            if(temp == 0) {
-                                changeFragment(new QuizFragment());
-                            }
-                        } else {
-                            Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Question number is null");
-                        }
-                    } else {
-                        isInital = false;
-                    }
-
-                } else {
-                    Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Current data : null");
-                }
-            }
-        });*/
-
         DatabaseReference databaseReference = firebaseDatabase.getReference("qNo");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Fragment current = getFragmentManager().findFragmentById(R.id.frame_window);
+                android.support.v4.app.Fragment current = getSupportFragmentManager().findFragmentById(R.id.frame_window);
                 Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Quiz Fragment :" + (current instanceof QuizFragment));
                 Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "isInitial:" + isInital);
                 Long temp = dataSnapshot.getValue(Long.class);
@@ -428,9 +395,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                android.support.v4.app.FragmentTransaction  fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.setTransitionStyle(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 fragmentTransaction.replace(R.id.frame_window, targetFragment);
                 fragmentTransaction.commitAllowingStateLoss();
             }

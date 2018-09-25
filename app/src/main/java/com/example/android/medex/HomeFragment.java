@@ -1,7 +1,7 @@
 package com.example.android.medex;
 
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentTransaction ;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.special.ResideMenu.ResideMenu;
 
-public class HomeFragment extends android.app.Fragment implements View.OnClickListener {
+public class HomeFragment extends android.support.v4.app.Fragment implements View.OnClickListener {
 
     private View parentView;
     private ResideMenu resideMenu;
@@ -100,11 +100,11 @@ public class HomeFragment extends android.app.Fragment implements View.OnClickLi
         }
     }
 
-    private void changeFragment(android.app.Fragment targetFragment) {
+    private void changeFragment(android.support.v4.app.Fragment targetFragment) {
 
-        FragmentManager fragmentManager = getFragmentManager();
+        android.support.v4.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setTransitionStyle(android.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        fragmentTransaction.setTransitionStyle(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         fragmentTransaction.replace(R.id.frame_window, targetFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();

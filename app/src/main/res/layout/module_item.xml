@@ -60,15 +60,17 @@
 
         </LinearLayout>
 
-        <ImageButton
+        <Button
             android:id="@+id/download_item"
-            android:layout_width="100dp"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:padding="8dp"
-            android:src="@drawable/ic_open" />
+            android:text="View"
+            android:textSize="20sp"
+            android:textColor="@color/colorSecondary"
+            android:background="@drawable/rounded_button"
+            android:padding="8dp" />
 
 
     </LinearLayout>

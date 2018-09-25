@@ -2,19 +2,15 @@ package com.example.android.medex;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.view.KeyboardShortcutGroup;
-import android.view.Menu;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-
-import java.util.List;
 
 public class CompleteDialog extends Dialog implements View.OnClickListener {
 
@@ -40,9 +36,10 @@ public class CompleteDialog extends Dialog implements View.OnClickListener {
     public void onClick(View v) {
         /* Dismiss dailog and replace fragment */
         dismiss();
-        mActivity.getFragmentManager().popBackStackImmediate();
-        FragmentTransaction fragmentTransaction = mActivity.getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
+        ((AppCompatActivity)mActivity).getSupportFragmentManager().popBackStackImmediate();
+        android.support.v4.app.FragmentManager fragmentManager = ((AppCompatActivity)mActivity).getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction  fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setTransitionStyle(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         fragmentTransaction.commit();
     }
 }

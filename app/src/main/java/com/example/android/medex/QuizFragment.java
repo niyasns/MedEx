@@ -1,7 +1,7 @@
 package com.example.android.medex;
 
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -45,7 +45,7 @@ import java.util.Map;
 
 import at.grabner.circleprogress.CircleProgressView;
 
-public class QuizFragment extends android.app.Fragment implements View.OnClickListener {
+public class QuizFragment extends android.support.v4.app.Fragment implements View.OnClickListener {
 
     private static final String TAG = "QuizFragment";
     private View parentView;
@@ -165,7 +165,6 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
     public void onDetach() {
         super.onDetach();
         Log.d(TAG, "OnDetach");
-        listenerRegistration.remove();
         databaseReference.removeEventListener(valueEventListener);
     }
     /**
@@ -174,43 +173,6 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
      * When an event occurs, it changes the current question.
      */
     private void setupFirebaseRealtimeListner() {
-        /*db = FirebaseFirestore.getInstance();
-        final DocumentReference documentReference = db.collection("config").document("currentQuiz");
-        listenerRegistration = documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot,
-                                @javax.annotation.Nullable FirebaseFirestoreException e) {
-
-                if (e != null) {
-                    Crashlytics.log(Log.WARN, TAG, "Listen failed " + e);
-                    return;
-                }
-
-                if (documentSnapshot != null && documentSnapshot.exists()) {
-                    Log.d(TAG, "Current data: " + documentSnapshot.getData());
-                    if(isCorrect) {
-                        Long temp = documentSnapshot.getLong("qNo");
-                        if (temp != null) {
-                            currentQue = temp.intValue();
-                            Log.d(TAG, currentQue + " Current Que");
-                        }
-                        if(correctDialog.isShowing()) {
-                            correctDialog.dismiss();
-                        }
-                        if(temp != null) {
-                            if(temp != -1 && isCorrect.equals(true)) {
-                                changeQuestion(currentQue);
-                            }
-                        } else {
-                            Crashlytics.log(Log.DEBUG, TAG, "Current question value is null");
-                        }
-                    }
-                } else {
-                    Crashlytics.log(Log.DEBUG, TAG, "Current data : null");
-                }
-            }
-        });*/
-
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("qNo");
         valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
@@ -254,6 +216,7 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         response.put("quizId", quiz_id);
         response.put("userId", user_id);
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("responses").add(response)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
@@ -288,8 +251,8 @@ public class QuizFragment extends android.app.Fragment implements View.OnClickLi
         } catch (Exception e) {
             /* If quiz list is null, Quiz fragemnt replaces with home fragment */
             Log.d(TAG, "Quiz List not availble");
-            parentActivity.getFragmentManager().popBackStackImmediate();
-            FragmentTransaction fragmentTransaction = parentActivity.getFragmentManager().beginTransaction();
+            parentActivity.getSupportFragmentManager().popBackStackImmediate();
+            FragmentTransaction fragmentTransaction = parentActivity.getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
             fragmentTransaction.commitAllowingStateLoss();
         }

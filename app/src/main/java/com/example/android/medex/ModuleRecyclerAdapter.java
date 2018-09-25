@@ -263,6 +263,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
             progressBar.setVisibility(View.INVISIBLE);
             Context mContext = mContextRef.get();
             if(s.equals("failed")) {
+                progressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(mContext,s +  " download Failed", Toast.LENGTH_SHORT).show();
             } else {
 
