@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.android.medex">
+    package="com.niyas.android.medex">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -18,17 +18,17 @@
         android:roundIcon="@mipmap/ic_logo_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.niyas.android.medex.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignupDetailActivity" />
-        <activity android:name=".SignupActivity" />
+        <activity android:name="com.niyas.android.medex.SignupDetailActivity" />
+        <activity android:name="com.niyas.android.medex.SignupActivity" />
         <activity
-            android:name=".HomeActivity"
+            android:name="com.niyas.android.medex.HomeActivity"
             android:screenOrientation="portrait"
             android:launchMode="singleInstance"/>
 
@@ -64,10 +64,10 @@
             android:value="90d1d409da9b334bc5f6a833edfca44d3a839cd6" />
 
         <service
-            android:name=".BackgroundSoundService"
+            android:name="com.niyas.android.medex.BackgroundSoundService"
             android:enabled="true" />
         <service
-            android:name=".BackgroundSoundServiceAPI26"
+            android:name="com.niyas.android.medex.BackgroundSoundServiceAPI26"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
