@@ -105,9 +105,11 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
                         Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
                         progressBar.setVisibility(View.INVISIBLE);
                     }
+                    progressBar.setVisibility(View.INVISIBLE);
                     if(QuizList.isEmpty()) {
                         recyclerView.setVisibility(View.INVISIBLE);
-                        quizListFrame.removeAllViews();
+                        if(no_data.getParent() != null)
+                            ((ViewGroup)no_data.getParent()).removeView(no_data);
                         quizListFrame.addView(no_data);
                     } else {
                         if(quizRecyclerAdapter != null) {
@@ -116,6 +118,7 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
                     }
 
                 } else {
+                    progressBar.setVisibility(View.INVISIBLE);
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz list loading", "Error getting documents : " + task.getException());
                 }
             }
@@ -129,7 +132,8 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
         recyclerView.setLayoutManager(linearLayoutManager);
         if(QuizList.isEmpty()) {
             recyclerView.setVisibility(View.INVISIBLE);
-            quizListFrame.removeAllViews();
+            if(no_data.getParent() != null)
+                ((ViewGroup)no_data.getParent()).removeView(no_data);
             quizListFrame.addView(no_data);
         } else {
             Log.d(TAG, String.valueOf(QuizList.size()));
@@ -315,6 +319,8 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
                         quizCountText.setVisibility(View.INVISIBLE);
                         latestQuiz.removeAllViews();
                         no_quiz.setVisibility(View.VISIBLE);
+                        if(no_quiz.getParent() != null)
+                            ((ViewGroup)no_quiz.getParent()).removeView(no_quiz);
                         latestQuiz.addView(no_quiz);
 
                     } else {
@@ -335,6 +341,8 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
                     countDownView.setVisibility(View.INVISIBLE);
                     quizCountText.setVisibility(View.INVISIBLE);
                     latestQuiz.removeAllViews();
+                    if(no_data.getParent() != null)
+                        ((ViewGroup)no_data.getParent()).removeView(no_data);
                     latestQuiz.addView(no_data);
                 }
             }

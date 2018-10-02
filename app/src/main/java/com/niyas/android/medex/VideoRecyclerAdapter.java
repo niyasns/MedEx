@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -97,16 +99,19 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoViewHolder> 
         progressBar.setVisibility(View.VISIBLE);
         Log.i("Opening video", videoArrayList.get(position).getUrl());
         String fileUrl = videoArrayList.get(position).getUrl();
-        String videoId = fileUrl.substring(fileUrl.length() - 11);
-        Intent videoAppIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + videoId));
-        Intent videoBrowserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fileUrl));
-        progressBar.setVisibility(View.INVISIBLE);
         try {
-            videosFragment.getActivity().startActivity(videoAppIntent);
-        } catch (ActivityNotFoundException e) {
-            videosFragment.getActivity().startActivity(videoBrowserIntent);
+            String videoId = fileUrl.substring(fileUrl.length() - 11);
+            Intent videoAppIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + videoId));
+            Intent videoBrowserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fileUrl));
+            progressBar.setVisibility(View.INVISIBLE);
+            try {
+                videosFragment.getActivity().startActivity(videoAppIntent);
+            } catch (ActivityNotFoundException e) {
+                videosFragment.getActivity().startActivity(videoBrowserIntent);
+            }
+        } catch (Exception ex) {
+            Crashlytics.log(Log.ERROR, TAG, "Video url id error " + ex.getMessage());
         }
-
     }
 
     @Override
