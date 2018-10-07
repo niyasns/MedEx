@@ -22,6 +22,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -195,13 +196,21 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     protected void onStart() {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        userName.setText(currentUser.getDisplayName());
-        userEmail.setText(currentUser.getEmail());
-        Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
+        try {
+            userName.setText(currentUser.getDisplayName());
+            if(!currentUser.getEmail().isEmpty()) {
+                userEmail.setText(currentUser.getEmail());
+                userEmail.setFocusable(false);
+            }
+            Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
+            personPhoto = currentUser.getPhotoUrl();
+            personName = currentUser.getDisplayName();
+            personId = currentUser.getUid();
+        } catch (Exception e) {
+            Crashlytics.log(Log.ERROR, TAG, e.getMessage());
+            Toast.makeText(this, "Please try again later", Toast.LENGTH_SHORT).show();
+        }
 
-        personPhoto = currentUser.getPhotoUrl();
-        personName = currentUser.getDisplayName();
-        personId = currentUser.getUid();
     }
 
     private void addUserDataToFireStore() {
