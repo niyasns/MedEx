@@ -57,7 +57,6 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoViewHolder> 
         holder.sub_title.setText(videoArrayList.get(position).getSubject());
         holder.type.setText(checkYear(videoArrayList.get(position).getType()));
         SimpleDateFormat simpleDateFormat  =new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US);
-        holder.time.setText(simpleDateFormat.format(videoArrayList.get(position).getTime().toDate()));
 
         Typeface raleway_bold = Typeface.createFromAsset(videosFragment.getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(videosFragment.getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
@@ -65,7 +64,6 @@ public class VideoRecyclerAdapter extends RecyclerView.Adapter<VideoViewHolder> 
         holder.title.setTypeface(raleway_bold);
         holder.sub_title.setTypeface(raleway_regular);
         holder.type.setTypeface(raleway_regular);
-        holder.time.setTypeface(raleway_regular);
 
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override

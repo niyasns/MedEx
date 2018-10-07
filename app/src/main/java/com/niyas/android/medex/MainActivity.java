@@ -266,15 +266,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         } else {
                             Log.d(TAG, "New User found");
                             progressBar.setVisibility(View.INVISIBLE);
-                            Intent intent = new Intent(MainActivity.this, SignupDetailActivity.class);
-                            for (UserInfo user: FirebaseAuth.getInstance().getCurrentUser().getProviderData()) {
-                                if (user.getProviderId().equals("facebook.com")) {
-                                    intent.putExtra("source","facebook");
-                                } else {
-                                    intent.putExtra("source", "google");
-                                }
-                            }
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            Intent intent = new Intent(MainActivity.this, SignupActivity.class);
                             startActivity(intent);
                         }
                     } else {

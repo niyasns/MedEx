@@ -197,15 +197,15 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         try {
-            userName.setText(currentUser.getDisplayName());
+            userName.setText(currentUser != null ? currentUser.getDisplayName() : null);
             if(!currentUser.getEmail().isEmpty()) {
                 userEmail.setText(currentUser.getEmail());
                 userEmail.setFocusable(false);
             }
             Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
             personPhoto = currentUser.getPhotoUrl();
-            personName = currentUser.getDisplayName();
             personId = currentUser.getUid();
+            personName = currentUser.getDisplayName();
         } catch (Exception e) {
             Crashlytics.log(Log.ERROR, TAG, e.getMessage());
             Toast.makeText(this, "Please try again later", Toast.LENGTH_SHORT).show();
