@@ -198,15 +198,23 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         FirebaseUser currentUser = mAuth.getCurrentUser();
         try {
             if(currentUser != null) {
-                userName.setText(currentUser.getDisplayName());
+                if(!(currentUser.getDisplayName().isEmpty())) {
+                    userName.setText(currentUser.getDisplayName());
+                    personName = currentUser.getDisplayName();
+                }
+
                 if(!currentUser.getEmail().isEmpty()) {
                     userEmail.setText(currentUser.getEmail());
                     userEmail.setFocusable(false);
                 }
-                Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
                 personPhoto = currentUser.getPhotoUrl();
+                if(personPhoto == null) {
+                    Picasso.get().load("https://picsum.photos/100/100/?random").into(circleImageView);
+                } else {
+                    Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
+                }
                 personId = currentUser.getUid();
-                personName = currentUser.getDisplayName();
+
             } else if(currentUser == null) {
                 Intent intent = new Intent(SignupDetailActivity.this, SignupActivity.class);
                 startActivity(intent);
@@ -257,16 +265,24 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
 
         if(mobileOk && emailOk && districtOk && groupOk)
         {
+            try{
+                user = new HashMap<>();
+                user.put("id", personId);
+                user.put("name", personName);
+                user.put("mobile", personMobile);
+                user.put("email", personEmail);
+                user.put("district", personDistrict);
+                user.put("blood", personBloodGroup);
+                if(personPhoto == null){
+                    user.put("pic", "https://picsum.photos/100/100/?random");
+                } else {
+                    user.put("pic", personPhoto.toString());
+                }
+                user.put("source",source);
+            } catch (Exception e) {
+                Crashlytics.log(Log.ERROR, TAG, e.getMessage());
+            }
 
-            user = new HashMap<>();
-            user.put("id", personId);
-            user.put("name", personName);
-            user.put("mobile", personMobile);
-            user.put("email", personEmail);
-            user.put("district", personDistrict);
-            user.put("blood", personBloodGroup);
-            user.put("pic", personPhoto.toString());
-            user.put("source",source);
 
             db.collection("users")
                     .add(user)
