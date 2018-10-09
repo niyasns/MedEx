@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Module III : Anatomy"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/colorSecondary" />
 
@@ -39,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SubTitle"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textColor="@color/colorTransparentWhite" />
 
             <TextView
@@ -59,10 +59,10 @@
             android:layout_gravity="center"
             android:layout_weight="1"
             android:text="View"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textColor="@color/colorSecondary"
             android:background="@drawable/rounded_button"
-            android:padding="8dp" />
+            android:padding="4dp" />
 
 
     </LinearLayout>

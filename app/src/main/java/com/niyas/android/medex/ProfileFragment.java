@@ -76,14 +76,23 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         parentView = inflater.inflate(R.layout.fragment_profile, container, false);
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setupViews();
         setupFirebase();
-        readUserDetails();
+        //readUserDetails();
         return parentView;
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "OnStart entered");
+        readUserDetails();
+    }
+
     /* Reading user details from firebase */
     private void readUserDetails() {
+        progressBar.setVisibility(View.VISIBLE);
         userId = mAuth.getUid();
         db.collection("users")
                 .whereEqualTo("id", userId)
@@ -119,6 +128,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
     private void setupFirebase() {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     private void setupViews() {
