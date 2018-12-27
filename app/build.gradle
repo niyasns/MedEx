@@ -22,8 +22,8 @@ android {
         applicationId "com.niyas.android.medex"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 10
-        versionName "2.91"
+        versionCode 11
+        versionName "3.0"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [
