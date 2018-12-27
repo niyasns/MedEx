@@ -261,7 +261,7 @@ public class VideosFragment extends android.support.v4.app.Fragment {
     private void handleSubject(Integer index) {
         yearIndex = index;
         yearFirebase = index + 1;
-        if(!subjectList.isEmpty()) {
+        if(!subjectList.isEmpty() && index < subjectList.size()) {
             ArrayList<String> subjects = subjectList.get(index).getSubList();
             if(subjects.isEmpty()) {
                 String[] topicTemp = {"Subject"};
