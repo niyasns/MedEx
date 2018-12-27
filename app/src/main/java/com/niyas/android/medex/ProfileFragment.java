@@ -1,6 +1,5 @@
 package com.niyas.android.medex;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -65,8 +63,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
     private String userId;
     private String docId;
 
-    private Context mContext;
-
     ArrayAdapter<String> districtAdapter;
     ArrayAdapter<String> groupAdapter;
     /* List of districts */
@@ -86,20 +82,27 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
         //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setupViews();
         setupFirebase();
+        setupAuthStateListener();
         //readUserDetails();
         return parentView;
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = context;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mContext = null;
+    private void setupAuthStateListener() {
+        mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                firebaseUser = mAuth.getCurrentUser();
+                if(firebaseUser != null) {
+                    readUserDetails();
+                } else {
+                    mAuth.signOut();
+                    getActivity().finish();
+                    getActivity().finishAffinity();
+                    Intent intent = new Intent(getActivity(), SignupActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 
     @Override
@@ -114,37 +117,35 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
         progressBar.setVisibility(View.VISIBLE);
         firebaseUser = mAuth.getCurrentUser();
         userId = firebaseUser != null ? firebaseUser.getUid() : null;
-        if(userId != null) {
-            db.collection("users")
-                    .whereEqualTo("id", userId)
-                    .limit(1)
-                    .get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
-                                for (QueryDocumentSnapshot document : task.getResult()) {
-                                    Log.d(TAG, "User details read complete" + document.getData());
-                                    progressBar.setVisibility(View.INVISIBLE);
-                                    userName.setText(document.getString("name"));
-                                    userMobile.setText(document.getString("mobile"));
-                                    userEmail.setText(document.getString("email"));
-                                    district = document.getString("district");
-                                    group = document.getString("blood");
-                                    docId = document.getString("userId");
-                                    int dIndex = districtAdapter.getPosition(district);
-                                    int bIndex = groupAdapter.getPosition(group);
-                                    userDistrict.setSelection(dIndex);
-                                    userBloodGroup.setSelection(bIndex);
-                                    Picasso.get().load(document.getString("pic")).into(circleImageView);
-                                }
-                            } else {
+        db.collection("users")
+                .whereEqualTo("id", userId)
+                .limit(1)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, "User details read complete" + document.getData());
                                 progressBar.setVisibility(View.INVISIBLE);
-                                Log.d(TAG, "Error getting documents: ", task.getException());
+                                userName.setText(document.getString("name"));
+                                userMobile.setText(document.getString("mobile"));
+                                userEmail.setText(document.getString("email"));
+                                district = document.getString("district");
+                                group = document.getString("blood");
+                                docId = document.getString("userId");
+                                int dIndex = districtAdapter.getPosition(district);
+                                int bIndex = groupAdapter.getPosition(group);
+                                userDistrict.setSelection(dIndex);
+                                userBloodGroup.setSelection(bIndex);
+                                Picasso.get().load(document.getString("pic")).into(circleImageView);
                             }
+                        } else {
+                            progressBar.setVisibility(View.INVISIBLE);
+                            Log.d(TAG, "Error getting documents: ", task.getException());
                         }
-                    });
-        }
+                    }
+                });
     }
 
     private void setupFirebase() {
@@ -154,9 +155,9 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
     }
 
     private void setupViews() {
-        Typeface raleway_bold = Typeface.createFromAsset(mContext.getAssets(),"fonts/Raleway-Bold.ttf" );
-        final Typeface raleway_regular = Typeface.createFromAsset(mContext.getAssets(),"fonts/Raleway-Regular.ttf" );
-        HomeActivity parentActivity = (HomeActivity) mContext;
+        Typeface raleway_bold = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
+        final Typeface raleway_regular = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
+        HomeActivity parentActivity = (HomeActivity) getActivity();
         Button button = parentActivity.findViewById(R.id.menu_button);
 
         heading = parentActivity.findViewById(R.id.heading);
@@ -265,52 +266,41 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
 
     @Override
     public void onClick(View v) {
-        if(userId != null) {
-            Map<String, Object> userData = new HashMap<>();
-            progressBar.setVisibility(View.VISIBLE);
-            userData.put("name", userName.getText().toString().trim());
-            userData.put("mobile", userMobile.getText().toString().trim());
-            userData.put("district", district.trim());
-            userData.put("blood", group.trim());
+        Map<String, Object> userData = new HashMap<>();
+        progressBar.setVisibility(View.VISIBLE);
+        userData.put("name", userName.getText().toString().trim());
+        userData.put("mobile", userMobile.getText().toString().trim());
+        userData.put("district", district.trim());
+        userData.put("blood", group.trim());
 
-            Crashlytics.log(Log.DEBUG, TAG, "Document ID : " + docId);
-            try {
-                db.collection("users")
-                        .document(docId)
-                        .update(userData)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d(TAG, "DocumentSnapshot successfully updated!");
-                                progressBar.setVisibility(View.INVISIBLE);
-                                if(mContext != null) {
-                                    Toast.makeText(mContext, "User details updated", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.w(TAG, "Error updating document", e);
-                                progressBar.setVisibility(View.INVISIBLE);
-                                if(mContext != null) {
-                                    Toast.makeText(mContext, "User details update failed. Try again", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-            } catch (Exception ex) {
-                Crashlytics.log(Log.ERROR, TAG, ex.getMessage());
-                Crashlytics.logException(ex);
-                readUserDetails();
-                if(mContext != null) {
-                    Toast.makeText(mContext, "Update failed. Try again", Toast.LENGTH_SHORT).show();
-                }
-            }
-        } else {
-            if(mContext != null) {
-                Toast.makeText(mContext, "Try again later", Toast.LENGTH_SHORT).show();
-            }
+        Crashlytics.log(Log.DEBUG, TAG, "Document ID : " + docId);
+        try {
+            db.collection("users")
+                    .document(docId)
+                    .update(userData)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(TAG, "DocumentSnapshot successfully updated!");
+                            progressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(parentView.getContext(), "User details updated", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Error updating document", e);
+                            progressBar.setVisibility(View.INVISIBLE);
+                            Toast.makeText(parentView.getContext(), "User details update failed. Try again", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } catch (Exception ex) {
+            Crashlytics.log(Log.ERROR, TAG, ex.getMessage());
+            Crashlytics.logException(ex);
+            readUserDetails();
+            Toast.makeText(getActivity(), "Update failed. Try again", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     @Override
