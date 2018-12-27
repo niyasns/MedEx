@@ -2,6 +2,7 @@ package com.niyas.android.medex;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -10,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -20,7 +23,6 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -72,7 +74,11 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.signup_activity);
+
         db = FirebaseFirestore.getInstance();
         callbackManager = CallbackManager.Factory.create();
         loginManager = LoginManager.getInstance();
@@ -95,12 +101,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         mGSignUpButton.setOnClickListener(this);
         mFSignUpButton.setOnClickListener(this);
-
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .setPersistenceEnabled(true)
-                .build();
-        db.setFirestoreSettings(settings);
         mAuth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -142,7 +142,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                     Toast.makeText(this, "Please connect to internet", Toast.LENGTH_SHORT).show();
                 }
                 break;
-                
+
             case R.id.f_signup:
                 conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 activeNetwork = conMgr.getActiveNetworkInfo();
@@ -313,6 +313,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             } else if(user.getUid() != null){
+
                 CollectionReference usersReference = db.collection("users");
                 Query query = usersReference.whereEqualTo("id", user.getUid());
                 Log.d(TAG, user.getUid());
@@ -322,6 +323,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                         if (task.isSuccessful()) {
                             QuerySnapshot queryResult = task.getResult();
                             if (!queryResult.isEmpty()) {
+
                                 Crashlytics.log(Log.DEBUG, TAG, "Registered user details " + queryResult.getDocuments());
                                 progressBar.setVisibility(View.INVISIBLE);
                                 Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
