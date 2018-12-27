@@ -82,6 +82,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths"/>
         </provider>
+        <activity
+            android:name=".PdfViewer"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_pdf_viewer"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".ImageViewer"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="ImageViewer"
+            android:theme="@style/FullscreenTheme" />
     </application>
 
 </manifest>
