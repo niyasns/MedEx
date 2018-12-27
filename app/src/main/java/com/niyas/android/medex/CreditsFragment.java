@@ -32,6 +32,7 @@ public class CreditsFragment extends android.support.v4.app.Fragment {
         TextView contrib_head = parentView.findViewById(R.id.contrib_1_head);
         TextView contrib_1 = parentView.findViewById(R.id.contrib_1);
         TextView contrib_2 = parentView.findViewById(R.id.contrib_2);
+        TextView contrib_3 = parentView.findViewById(R.id.contrib_3);
         heading.setText("Credits");
         heading.setTypeface(raleway_bold);
         app_name.setTypeface(raleway_bold);
@@ -40,5 +41,6 @@ public class CreditsFragment extends android.support.v4.app.Fragment {
         contrib_head.setTypeface(raleway_regular);
         contrib_1.setTypeface(raleway_regular);
         contrib_2.setTypeface(raleway_regular);
+        contrib_3.setTypeface(raleway_regular);
     }
 }
