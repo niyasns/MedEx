@@ -28,12 +28,25 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.zxing.common.StringUtils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import io.opencensus.internal.StringUtil;
 
 public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder> {
 
@@ -44,8 +57,9 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
 
     private Activity context;
     private static String extension = ".pdf";
-    private static DownloadManager downloadManager;
+    //private static DownloadManager downloadManager;
     private static ArrayList<String> downloads;
+    private static ArrayList<String> downloadedFiles;
 
     /**
      * ModuleRecyclerAdapter Constructor
@@ -69,9 +83,27 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View view = layoutInflater.inflate(R.layout.module_item, parent, false);
         downloads = new ArrayList<>();
-        downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        context.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        downloadedFiles = new ArrayList<>();
+        loadDownloadedFiles();
+        //downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        //context.registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
         return new ModuleViewHolder(view);
+    }
+
+    private void loadDownloadedFiles() {
+
+        File path = new File(context.getFilesDir() + "/docs/");
+        File list[] = path.listFiles();
+        if(list != null){
+            for(int i = 0; i < list.length; i++) {
+                Integer index = list[i].getName().indexOf(".");
+                if(index != -1) {
+                    String fileName = list[i].getName().substring(0, index);
+                    downloadedFiles.add(fileName);
+                    Log.d(TAG, fileName);
+                }
+            }
+        }
     }
 
     @Override
@@ -89,14 +121,56 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         holder.sub_title.setTypeface(raleway_regular);
         holder.type.setTypeface(raleway_regular);
 
+        if(!downloadedFiles.contains(moduleArrayList.get(position).getFileName())) {
+            holder.delete.setVisibility(View.INVISIBLE);
+            holder.download.setBackgroundResource(R.drawable.ic_download);
+        }
+
+        if(downloadedFiles.contains(moduleArrayList.get(position).getFileName())) {
+            holder.delete.setVisibility(View.VISIBLE);
+            holder.download.setBackgroundResource(R.drawable.ic_view);
+        }
+
         holder.download.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 downloadFile(holder.getAdapterPosition());
+                holder.delete.setVisibility(View.VISIBLE);
+                holder.download.setBackgroundResource(R.drawable.ic_view);
             }
         });
 
+        holder.delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isDeleted = deleteFile(holder.getAdapterPosition());
+                if(isDeleted){
+                    holder.delete.setVisibility(View.INVISIBLE);
+                    holder.download.setBackgroundResource(R.drawable.ic_download);
+                }
+            }
+        });
+    }
+
+    private boolean deleteFile(int position) {
+
+        Log.i("Deleting file", moduleArrayList.get(position).getUrl());
+        String filePath = moduleArrayList.get(position).getUrl();
+        final String fileName = moduleArrayList.get(position).getFileName();
+        extension = filePath.substring(filePath.lastIndexOf("."));
+        File path = new File(context.getFilesDir() + "/docs/");
+        if (!path.exists()) {
+            if(path.mkdir());
+        }
+        File file = new File(context.getFilesDir() + File.separator + "docs" + File.separator + fileName + extension);
+        if(file.delete()) {
+            Toast.makeText(context, fileName + " deleted successfully", Toast.LENGTH_SHORT).show();
+            return true;
+        } else {
+            Toast.makeText(context, fileName + " doesn't exists", Toast.LENGTH_SHORT).show();
+            return false;
+        }
     }
 
     private String checkYear(Long type) {
@@ -121,36 +195,41 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         progressBar.setVisibility(View.VISIBLE);
         Log.i("Downloading File", moduleArrayList.get(position).getUrl());
         String filePath = moduleArrayList.get(position).getUrl();
-        String fileName = moduleArrayList.get(position).getFileName();
+        final String fileName = moduleArrayList.get(position).getFileName();
         extension = filePath.substring(filePath.lastIndexOf("."));
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + File.separator +
-                moduleArrayList.get(position).getFileName() + extension);
-
+        File path = new File(context.getFilesDir() + "/docs/");
+        if (!path.exists()) {
+            if(path.mkdir());
+        }
+        File file = new File(context.getFilesDir() + File.separator + "docs" + File.separator + fileName + extension);
         if(file.exists()) {
+            progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(context, "Opening file from downloads", Toast.LENGTH_SHORT).show();
-            openFile(file);
-        } else if(downloads.contains(fileName)) {
-            Toast.makeText(context, fileName + "already in download queue. Please check", Toast.LENGTH_SHORT).show();
+            openFile(file, moduleArrayList.get(position).getUrl());
+        } else if(downloads.size() > 0) {
+            progressBar.setVisibility(View.INVISIBLE);
+            Toast.makeText(context, "Multiple download not supported", Toast.LENGTH_SHORT).show();
         } else {
             downloads.add(fileName);
             Log.d(TAG, fileName + " added to queue");
+            Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show();
             storage.getReference(moduleArrayList.get(position).getUrl()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                 @Override
                 public void onSuccess(Uri uri) {
                     Log.d("Download Link", uri.toString());
+                    progressBar.setVisibility(View.INVISIBLE);
                     DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(context, progressBar);
-                    downloadFileFromURL.execute(uri.toString(), moduleArrayList.get(position).getFileName(), moduleArrayList.get(position).getSubject());
+                    downloadFileFromURL.execute(uri.toString(), moduleArrayList.get(position).getFileName(),
+                            moduleArrayList.get(position).getSubject(), fileName, moduleArrayList.get(position).getFileId());
 
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
+                    progressBar.setVisibility(View.INVISIBLE);
                     Log.e("Fetching URL failed", moduleArrayList.get(position).getUrl());
-                    try {
-                        Toast.makeText(context, "Download Failed", Toast.LENGTH_SHORT).show();
-                    } catch (Exception ex) {
-                        Crashlytics.logException(ex);
-                    }
+                    downloads.remove(fileName);
+                    Toast.makeText(context, "Download Failed", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -161,7 +240,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         return moduleArrayList.size();
     }
 
-    private void openFile(File file) {
+    private void openFile(File file, String url) {
         Uri path = Uri.fromFile(file);
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
         String mimeType = "*/*";
@@ -170,25 +249,24 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         }
         Log.d(TAG, mimeType + " " + extension);
         Log.i(TAG, String.valueOf(path));
-        Intent OpenIntent = new Intent(Intent.ACTION_VIEW);
-        OpenIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        Uri fileURI = FileProvider.getUriForFile(context,
-                context.getApplicationContext().getPackageName() + ".provider", file);
-        if(extension.equals(".pdf")) {
-            OpenIntent.setDataAndType(fileURI, "application/" + mimeType);
-        } else if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
-            OpenIntent.setDataAndType(fileURI, "image/" + mimeType);
-        }
-        OpenIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        progressBar.setVisibility(View.INVISIBLE);
-        try {
-            context.startActivity(OpenIntent);
-        } catch (ActivityNotFoundException e) {
-            Log.d(TAG, e.getMessage());
+        if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
+            //OpenIntent.setDataAndType(fileURI, "image/" + mimeType);
+            Intent intent = new Intent(context, ImageViewer.class);
+            intent.putExtra("file", file);
+            intent.putExtra("url", url);
+            progressBar.setVisibility(View.INVISIBLE);
+            context.startActivity(intent);
+        } else {
+            //OpenIntent.setDataAndType(fileURI, "application/" + mimeType);
+            Intent intent = new Intent(context, PdfViewer.class);
+            intent.putExtra("file", file);
+            intent.putExtra("url", url);
+            progressBar.setVisibility(View.INVISIBLE);
+            context.startActivity(intent);
         }
     }
 
-    private static BroadcastReceiver onComplete = new BroadcastReceiver() {
+/*    private static BroadcastReceiver onComplete = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String title;
@@ -201,24 +279,19 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 if(status == DownloadManager.STATUS_SUCCESSFUL) {
                     title = c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE));
                     downloads.remove(title);
-                    try {
-                        Toast.makeText(context, title + " downloaded", Toast.LENGTH_SHORT).show();
-                    } catch (Exception ex) {
-                        Crashlytics.logException(ex);
-                    }
-
+                    Toast.makeText(context, title + " downloaded", Toast.LENGTH_SHORT).show();
                 }
             }
         }
-    };
+    };*/
 
     private static class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
         private WeakReference<ProgressBar> progressBarRef;
-        private WeakReference<Activity> mContextRef;
+        private WeakReference<Context> mContextRef;
 
-        DownloadFileFromURL(Activity context, ProgressBar progressBar){
-            this.mContextRef = new WeakReference<Activity>(context);
+        DownloadFileFromURL(Context context, ProgressBar progressBar){
+            this.mContextRef = new WeakReference<>(context);
             this.progressBarRef = new WeakReference<>(progressBar);
 
         }
@@ -228,12 +301,49 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
             super.onPreExecute();
             ProgressBar progressBar = progressBarRef.get();
             progressBar.setVisibility(View.VISIBLE);
+            progressBar.setIndeterminate(true);
         }
 
         @Override
         protected String doInBackground(String... strings) {
 
-            Uri uri = Uri.parse(strings[0]);
+            int count;
+            Context context = mContextRef.get();
+            File path = new File(context.getFilesDir() + "/docs/");
+            try {
+                URL url = new URL(strings[0]);
+                URLConnection connection = url.openConnection();
+                connection.connect();
+
+                int lengthOfFile = connection.getContentLength();
+                Log.d(TAG, "Length of file: " + lengthOfFile);
+
+                InputStream inputStream = new BufferedInputStream(url.openStream());
+                File file = new File(path, strings[1] + extension);
+                OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+
+                byte data[] = new byte[1024];
+                long total = 0;
+
+                while ((count = inputStream.read(data)) != -1) {
+                    total += count;
+                    publishProgress("" + (int)((total*100) / lengthOfFile));
+                    outputStream.write(data, 0, count);
+                }
+
+                outputStream.flush();
+                outputStream.close();
+                inputStream.close();
+
+            } catch (MalformedURLException e) {
+                Log.e(TAG, e.getMessage(), e);
+                return "failed";
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage(), e);
+                return "failed";
+            }
+
+       /*     Uri uri = Uri.parse(strings[0]);
             DownloadManager.Request request = new DownloadManager.Request(uri);
             request.setTitle(strings[1]);
             request.setDescription(strings[2]);
@@ -244,14 +354,16 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 downloadManager.enqueue(request);
             } else {
                 return "failed";
-            }
-            return strings[1];
+            }*/
+            return strings[3];
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
-
+            ProgressBar progressBar = progressBarRef.get();
+            progressBar.setIndeterminate(false);
+            progressBar.setProgress(Integer.parseInt(values[0]));
         }
 
         @Override
@@ -259,13 +371,15 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
             super.onPostExecute(s);
             ProgressBar progressBar = progressBarRef.get();
             progressBar.setVisibility(View.INVISIBLE);
+            progressBar.setIndeterminate(true);
+            downloads.remove(s);
             try {
                 Context mContext = mContextRef.get();
                 if(s.equals("failed")) {
                     progressBar.setVisibility(View.INVISIBLE);
                     Toast.makeText(mContext,s +  " download Failed", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(mContext, "Downloading " + s, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, s + " downloaded", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception ex) {
                 Crashlytics.logException(ex);
