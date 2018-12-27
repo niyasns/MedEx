@@ -8,14 +8,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 public class BackgroundSoundService extends Service {
-    MediaPlayer player;
     private String quizName;
     private String quizTimeout;
     private int NOTIFICATION_ID = 1;
@@ -33,10 +31,6 @@ public class BackgroundSoundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        /* Initializing media player for playing audio */
-        player = MediaPlayer.create(this, R.raw.background);
-        player.setLooping(true);
-        player.setVolume(100, 100);
     }
 
 
@@ -44,7 +38,8 @@ public class BackgroundSoundService extends Service {
         /* Starting audio with intent */
         Bundle bundle = intent.getExtras();
         quizName = bundle.getString("quiz_name");
-        quizTimeout = bundle.get("quiz_timeout").toString();
+        Integer temp = bundle.getInt("quiz_timeout") + 10;
+        quizTimeout = temp.toString();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE);
@@ -56,7 +51,7 @@ public class BackgroundSoundService extends Service {
             notificationManager.createNotificationChannel(notificationChannel);
             notification = new Notification.Builder(getBaseContext(), CHANNEL_ID)
                     .setContentTitle(quizName + " started")
-                    .setContentText(quizTimeout + " seconds to join")
+                    .setContentText("Click to join")
                     .setSmallIcon(R.drawable.logo_launch)
                     .setAutoCancel(true)
                     .build();
@@ -68,14 +63,8 @@ public class BackgroundSoundService extends Service {
             startForeground(NOTIFICATION_ID, notification);
         }
 
-        player.start();
+        /* player.start();*/
         return Service.START_NOT_STICKY;
-    }
-
-    @Override
-    public void onStart(Intent intent, int startId) {
-        super.onStart(intent, startId);
-        player.start();
     }
 
     @Override
@@ -84,10 +73,8 @@ public class BackgroundSoundService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             stopForeground(true); //true will remove notification
         }
-        player.stop();
+        /*player.stop();
         player.reset();
-        player.release();
+        player.release();*/
     }
-
-
 }
