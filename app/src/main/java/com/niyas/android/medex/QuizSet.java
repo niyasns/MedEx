@@ -14,13 +14,15 @@ class QuizSet {
     private Timestamp scheduledTime;
     private Integer timeOut;
     String title;
+    private Long prizeMoney;
 
     public QuizSet()
     {
 
     }
 
-    public QuizSet(boolean completed, boolean started, List<Question> questions, String quizId, Timestamp scheduledTime, Integer timeOut, String title) {
+    public QuizSet(boolean completed, boolean started, List<Question> questions, String quizId, Timestamp scheduledTime, Integer timeOut, String title,
+                   Long prizeMoney) {
         this.completed = completed;
         this.started = started;
         this.questions = questions;
@@ -28,6 +30,15 @@ class QuizSet {
         this.scheduledTime = scheduledTime;
         this.timeOut = timeOut;
         this.title = title;
+        this.prizeMoney = prizeMoney;
+    }
+
+    public Long getPrizeMoney() {
+        return prizeMoney;
+    }
+
+    public void setPrizeMoney(Long prizeMoney) {
+        this.prizeMoney = prizeMoney;
     }
 
     public boolean isStarted() {

@@ -1,5 +1,8 @@
 package com.niyas.android.medex;
 
+import android.content.Context;
+import android.media.MediaPlayer;
+import android.os.Handler;
 import android.support.v4.app.FragmentTransaction;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -9,16 +12,19 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.api.LogDescriptor;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -32,9 +38,12 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.special.ResideMenu.ResideMenu;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import at.grabner.circleprogress.CircleProgressView;
 
@@ -81,16 +90,26 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
     List QuizList;
     /* Answers array list */
     ArrayList<String> answers;
+    ArrayList<Boolean> correctAnswers;
     /* Quiz details for creating response*/
-    String quiz_id;
-    Timestamp created_at;
-    String user_id;
+    static String quiz_id;
+    static Timestamp created_at;
+    static String user_id;
+    static Long prizeMoney;
     /* ListenerRegistraion used to stop listener during fragment detach */
     ListenerRegistration listenerRegistration;
     DatabaseReference databaseReference;
     ValueEventListener valueEventListener;
+    Handler quizHandler;
+    Runnable myRunnable;
 
     Button userAnswer;
+
+    MediaPlayer player;
+
+    Context mContext;
+
+    int length = 0;
 
     public QuizFragment() {
         // Required empty public constructor
@@ -101,14 +120,16 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         parentView = inflater.inflate(R.layout.quiz_fragment, container, false);
         setupViews();
+        setupAudioPlayer();
         mAuth = FirebaseAuth.getInstance();
         setupQuiz();
-        setupFirebaseRealtimeListner();
-        setupCircularProgressViewListener();
-        answers = new ArrayList<>();
-        isCorrect = false;
-        userAnswer = null;
         return parentView;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
     }
 
     @Override
@@ -117,8 +138,15 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
         Log.d(TAG,"onStart entered");
     }
 
-    private void setupResponse() {
+    public void setupAudioPlayer() {
 
+        player = MediaPlayer.create(mContext, R.raw.background);
+        player.setLooping(true);
+        player.setVolume(0, 0);
+    }
+
+    private void setupResponse() {
+        Crashlytics.log(Log.DEBUG, TAG, "Quiz id " + quizSet.getQuizId() + " started");
         quiz_id = quizSet.getQuizId();
         user_id = mAuth.getUid();
         created_at = quizSet.getScheduledTime();
@@ -134,86 +162,101 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
     public void onResume() {
         Log.d(TAG, "onResume Entered");
         super.onResume();
+        if(!player.isPlaying()) {
+            player.seekTo(length);
+            player.start();
+            startFadeIn();
+        }
     }
 
     @Override
     public void onPause() {
         Log.d(TAG, "onPause Entered");
         super.onPause();
+        player.pause();
+        length = player.getCurrentPosition();
+
     }
 
     @Override
     public void onStop() {
         super.onStop();
         Log.d(TAG, "Quiz fragement stopped");
+        quizHandler.removeCallbacks(myRunnable);
+        if(player.isPlaying()) {
+            player.stop();
+            player.reset();
+            player.release();
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         Log.d(TAG, "OnDestroyView");
-        databaseReference.removeEventListener(valueEventListener);
         countDownTimer.cancel();
-        parentActivity.setIsInitial();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         Log.d(TAG, "OnDetach");
-        databaseReference.removeEventListener(valueEventListener);
         countDownTimer.cancel();
-        parentActivity.setIsInitial();
     }
-    /**
-     * Firebase Listener for question number events.
-     * This Listener listens for the changes in current question number.
-     * When an event occurs, it changes the current question.
-     */
-    private void setupFirebaseRealtimeListner() {
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = firebaseDatabase.getReference("qNo");
-        databaseReference.keepSynced(true);
-        valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+
+    float volume = 0;
+
+    private void startFadeIn(){
+        final int FADE_DURATION = 3000; //The duration of the fade
+        //The amount of time between volume changes. The smaller this is, the smoother the fade
+        final int FADE_INTERVAL = 250;
+        final int MAX_VOLUME = 1; //The volume will increase from 0 to 1
+        int numberOfSteps = FADE_DURATION/FADE_INTERVAL; //Calculate the number of fade steps
+        //Calculate by how much the volume changes each step
+        final float deltaVolume = MAX_VOLUME / (float)numberOfSteps;
+
+        //Create a new Timer and Timer task to run the fading outside the main UI thread
+        final Timer timer = new Timer(true);
+        TimerTask timerTask = new TimerTask() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(isCorrect) {
-                    Long temp = dataSnapshot.getValue(Long.class);
-                    if (temp != null) {
-                        currentQue = temp.intValue();
-                        Log.d(TAG, currentQue + " Current Que");
-                    }
-                    if(correctDialog.isShowing()) {
-                        correctDialog.dismiss();
-                    }
-                    if(temp != null) {
-                        if(temp != -1 && isCorrect.equals(true)) {
-                            changeQuestion(currentQue);
-                        }
-                    } else {
-                        Crashlytics.log(Log.DEBUG, TAG, "Current question value is null");
-                    }
+            public void run() {
+                fadeInStep(deltaVolume); //Do a fade step
+                //Cancel and Purge the Timer if the desired volume has been reached
+                if(volume>=1f){
+                    timer.cancel();
+                    timer.purge();
                 }
             }
+        };
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+        timer.schedule(timerTask,FADE_INTERVAL,FADE_INTERVAL);
+    }
 
-            }
-        });
+    private void fadeInStep(float deltaVolume){
+        player.setVolume(volume, volume);
+        volume += deltaVolume;
+
     }
 
     /**
      * Sending response after quiz is completed.
-     * @param isComplete boolean to check if quiz is complete or not.
      */
-    private void sendResponse(final Boolean isComplete) {
+    private void sendResponse() {
+
+        final boolean all_correct = !(correctAnswers.contains(false));
+
+        quiz_id = quizSet.getQuizId();
+        Crashlytics.log(Log.DEBUG, TAG, "Response for" + quiz_id);
 
         Map<String, Object> response = new HashMap<>();
         response.put("answers", answers);
         response.put("createdAt", created_at);
         response.put("quizId", quiz_id);
         response.put("userId", user_id);
+        response.put("all_correct", all_correct);
+        response.put("prize_money", prizeMoney);
+
+        Crashlytics.log(Log.DEBUG, TAG, "Response: " + response.toString());
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("responses").add(response)
@@ -221,12 +264,16 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d(TAG, "DocumentSnapshot successfully written!");
-                        if(isComplete) {
+                        if(all_correct) {
+                            completeDialog = new CompleteDialog(parentActivity, quiz_id, prizeMoney);
                             completeDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            completeDialog.setCanceledOnTouchOutside(false);
                             completeDialog.show();
                         } else {
-                            wrongDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                            wrongDialog.show();
+                            Integer correct = Collections.frequency(correctAnswers, true);
+                            LoserDialog loserDialog = new LoserDialog(parentActivity, total_questions.toString(), correct.toString());
+                            loserDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            loserDialog.show();
                         }
                     }
                 })
@@ -234,6 +281,8 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error writing document", e);
+                        Crashlytics.log(Log.ERROR, TAG, "Error writing response document");
+                        sendResponse();
                     }
                 });
     }
@@ -249,7 +298,7 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
             QuizList = parentActivity.getQuizList();
         } catch (Exception e) {
             /* If quiz list is null, Quiz fragemnt replaces with home fragment */
-            Log.d(TAG, "Quiz List not availble");
+            Log.d(TAG, "Quiz List not available");
             parentActivity.getSupportFragmentManager().popBackStackImmediate();
             FragmentTransaction fragmentTransaction = parentActivity.getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
@@ -258,17 +307,40 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
 
         if(QuizList.isEmpty()){
             Log.d(TAG, "Quiz list empty");
+            Crashlytics.log(Log.ERROR, TAG + " setup Quiz", "Quiz list empty");
+            Toast.makeText(parentActivity, "Sorry, Can't fetch data due to network failure", Toast.LENGTH_SHORT).show();
+            (parentActivity).getSupportFragmentManager().popBackStackImmediate();
+            android.support.v4.app.FragmentManager fragmentManager = (parentActivity).getSupportFragmentManager();
+            android.support.v4.app.FragmentTransaction  fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.frame_window, new HomeFragment());
+            fragmentTransaction.setTransitionStyle(android.support.v4.app.FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            fragmentTransaction.commit();
         } else {
             quizSet = (QuizSet) QuizList.get(0);
             setupResponse();
+            quiz_id = quizSet.getQuizId();
             questionList = quizSet.getQuestions();
             total_questions = questionList.size();
+            prizeMoney = quizSet.getPrizeMoney();
             circleProgressView.setMaxValue(quizSet.getTimeOut());
             circleProgressView.setValue(0);
 
             setupCountDownTimer();
-            /* Calling changeQuestion with argument 0 to represent first question */
-            changeQuestion(0);
+            Log.d(TAG, "Entering handler");
+            quizHandler = new Handler(parentActivity.getMainLooper());
+
+            myRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    changeQuestion(0);
+                    setupCircularProgressViewListener();
+                    answers = new ArrayList<>();
+                    correctAnswers = new ArrayList<>();
+                    isCorrect = false;
+                    userAnswer = null;
+                }
+            };
+            quizHandler.postDelayed(myRunnable, 1000);
         }
     }
     /* Count down timer initialisation for circular progress view */
@@ -298,36 +370,73 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
                 @Override
                 public void onProgressChanged(float value) {
                     /* Checking time out reached or not */
-                    if(value == quizSet.getTimeOut()) {
-                        Log.d("QuizFragment", "onprogresscahnged entered");
-                        if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
-                            /* If no answer is provided or answer is wrong*/
-                            isCorrect = false;
-                            Log.d("Current value:", (currentQue.toString()));
-                            answers.add(pAnswer);
-                            showCorrectAnswer(questionList.get(currentQue).getAnswer());
-                            showWrongAnswer();
-                            sendResponse(false);
-                        } else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
-                            /* If answer is correct and questions remaining */
-                            Log.d("Current value:", (currentQue.toString()));
-                            answers.add(pAnswer);
-                            isCorrect = true;
-                            showCorrectAnswer();
-                            correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                            correctDialog.show();
-                        }else if(pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
+                    if (value == quizSet.getTimeOut()) {
+                        Log.d("QuizFragment", "onprogresschanged entered");
+                        if (pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) == (total_questions))) {
                             /* If answer is correct and no questions remaining */
                             Log.d("Current value:", (currentQue.toString()));
                             isCorrect = true;
                             answers.add(pAnswer);
+                            correctAnswers.add(true);
                             showCorrectAnswer();
-                            sendResponse(true);
+                            sendResponse();
+                        } else if (!(pAnswer.equals(questionList.get(currentQue).getAnswer())) && ((currentQue + 1) == (total_questions))) {
+                            /* If answer is not correct and no questions remaining */
+                            Log.d("Current value:", (currentQue.toString()));
+                            isCorrect = false;
+                            answers.add(pAnswer);
+                            correctAnswers.add(false);
+                            showWrongAnswer();
+                            sendResponse();
+                        } else if (pAnswer.equals("null") || !pAnswer.equals(questionList.get(currentQue).getAnswer())) {
+                            /* If no answer is provided or answer is wrong*/
+                            isCorrect = false;
+                            Log.d("Current value:", (currentQue.toString()));
+                            answers.add(pAnswer);
+                            correctAnswers.add(false);
+                            //showCorrectAnswer(questionList.get(currentQue).getAnswer());
+                            showWrongAnswer();
+                            //sendResponse(false);
+                            wrongDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            wrongDialog.show();
+                            showNextQuestion();
+                        } else if (pAnswer.equals(questionList.get(currentQue).getAnswer()) && ((currentQue + 1) < total_questions)) {
+                            /* If answer is correct and questions remaining */
+                            Log.d("Current value:", (currentQue.toString()));
+                            answers.add(pAnswer);
+                            correctAnswers.add(true);
+                            isCorrect = true;
+                            showCorrectAnswer();
+                            correctDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            correctDialog.show();
+                            showNextQuestion();
                         }
                     }
                 }
             });
         }
+    }
+
+    private void showNextQuestion() {
+
+        new CountDownTimer(2000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+
+            @Override
+            public void onFinish(){
+
+                if(correctDialog.isShowing()) {
+                    correctDialog.dismiss();
+                } else if(wrongDialog.isShowing()) {
+                    wrongDialog.dismiss();
+                }
+                currentQue++;
+                changeQuestion(currentQue);
+            }
+        }.start();
     }
 
     private void showWrongAnswer() {
@@ -361,20 +470,23 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
     public void changeQuestion(Integer currentQue) {
         Log.d("QuizFragment", "change question entered");
         progress = 0;
-        if(currentQue < total_questions) {
-            /* Resetting button for new question */
-            resetButton();
-            /* Enable button that are disable during previous question */
-            enableButton();
-            question.setText(questionList.get(currentQue).getQuestion());
-            circleProgressView.setValue(0);
-            option_1.setText(questionList.get(currentQue).getOptions().get(0));
-            option_2.setText(questionList.get(currentQue).getOptions().get(1));
-            option_3.setText(questionList.get(currentQue).getOptions().get(2));
-            /* Executing async task for countdown timer */
-            new TimerAsync().execute();
+        try {
+            if(currentQue < total_questions) {
+                /* Resetting button for new question */
+                resetButton();
+                /* Enable button that are disable during previous question */
+                enableButton();
+                question.setText(questionList.get(currentQue).getQuestion());
+                circleProgressView.setValue(0);
+                option_1.setText(questionList.get(currentQue).getOptions().get(0));
+                option_2.setText(questionList.get(currentQue).getOptions().get(1));
+                option_3.setText(questionList.get(currentQue).getOptions().get(2));
+                /* Executing async task for countdown timer */
+                countDownTimer.start();
+            }
+        } catch (Exception e) {
+            Crashlytics.log(Log.ERROR, TAG + " ChangeQuestion", e.getMessage());
         }
-
     }
 
     private void setupViews() {
@@ -389,7 +501,7 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
         question = parentView.findViewById(R.id.question);
         circleProgressView = parentView.findViewById(R.id.circleProgressView);
 
-        heading.setText(R.string.home);
+        heading.setText("Quiz");
         option_1.setTypeface(raleway_regular);
         option_2.setTypeface(raleway_regular);
         option_3.setTypeface(raleway_regular);
@@ -397,8 +509,10 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
 
         resideMenu = parentActivity.getResideMenu();
         correctDialog = new CorrectDialog(parentActivity);
-        completeDialog = new CompleteDialog(parentActivity);
+        correctDialog.setCanceledOnTouchOutside(false);
+
         wrongDialog = new WrongDialog(parentActivity);
+        wrongDialog.setCanceledOnTouchOutside(false);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -471,26 +585,6 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
         option_1.setEnabled(false);
         option_2.setEnabled(false);
         option_3.setEnabled(false);
-    }
-    /* Async task for count down timer */
-    static class TimerAsync extends AsyncTask<Void, Void, Void > {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            countDownTimer.start();
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-        }
     }
 }
 

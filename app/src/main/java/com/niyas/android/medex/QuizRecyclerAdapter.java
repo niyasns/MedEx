@@ -43,13 +43,16 @@ public class QuizRecyclerAdapter extends RecyclerView.Adapter<QuizViewHolder> {
         holder.quizDate.setText(simpleDateFormat.format(quizSets.get(position).getScheduledTime().toDate()));
         SimpleDateFormat simpleTimeFormat  =new SimpleDateFormat("HH:mm", Locale.US);
         holder.quizTime.setText(simpleTimeFormat.format(quizSets.get(position).getScheduledTime().toDate()));
+        String prizeMoney = countDownFragment.getString(R.string.Rs) + " " + quizSets.get(position).getPrizeMoney().toString();
+        holder.quizPrize.setText(prizeMoney);
 
         Typeface raleway_bold = Typeface.createFromAsset(countDownFragment.getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
         Typeface raleway_regular = Typeface.createFromAsset(countDownFragment.getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
 
         holder.quizTitle.setTypeface(raleway_bold);
         holder.quizDate.setTypeface(raleway_regular);
-        holder.quizTime.setTypeface(raleway_bold);
+        holder.quizTime.setTypeface(raleway_regular);
+        holder.quizPrize.setTypeface(raleway_bold);
     }
 
     @Override
