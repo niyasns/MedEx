@@ -14,7 +14,7 @@
                     android:height="40dp"/>
 
                 <solid
-                    android:color="@color/colorTransparentBlack"/>
+                    android:color="@color/colorTransparentBlackDouble"/>
 
             </shape>
         </rotate>

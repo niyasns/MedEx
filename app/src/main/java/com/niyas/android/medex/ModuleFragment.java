@@ -125,7 +125,7 @@ public class ModuleFragment extends android.support.v4.app.Fragment {
                                 frameLayout.removeAllViews();
                                 frameLayout.addView(recyclerView);
                                 recyclerView.setVisibility(View.VISIBLE);
-                                moduleRecyclerAdapter = new ModuleRecyclerAdapter(ModuleFragment.this, moduleArrayListNew, storage, progressBar);
+                                moduleRecyclerAdapter = new ModuleRecyclerAdapter(getActivity(), moduleArrayListNew, storage, progressBar);
                                 recyclerView.setAdapter(moduleRecyclerAdapter);
                             }
                         }
@@ -302,7 +302,7 @@ public class ModuleFragment extends android.support.v4.app.Fragment {
                             frameLayout.removeAllViews();
                             frameLayout.addView(no_data);
                         } else {
-                            moduleRecyclerAdapter = new ModuleRecyclerAdapter(ModuleFragment.this, moduleArrayList, storage, progressBar);
+                            moduleRecyclerAdapter = new ModuleRecyclerAdapter(getActivity(), moduleArrayList, storage, progressBar);
                             recyclerView.setAdapter(moduleRecyclerAdapter);
                         }
                     }

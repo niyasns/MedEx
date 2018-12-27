@@ -248,10 +248,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void updateUI(FirebaseUser user) {
 
-        if(user != null)
+        if(user != null && (user.getUid() != null))
         {
             CollectionReference usersReference = db.collection("users");
-            Query query = usersReference.whereEqualTo("email", user.getEmail());
+            Query query = usersReference.whereEqualTo("id", user.getUid());
             query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {

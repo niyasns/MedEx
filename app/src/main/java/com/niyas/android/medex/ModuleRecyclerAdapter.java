@@ -1,5 +1,6 @@
 package com.niyas.android.medex;
 
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -23,6 +24,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -36,37 +38,35 @@ import java.util.Locale;
 public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder> {
 
     private static final String TAG = "ModuleRecyclerAdapter";
-    private ModuleFragment moduleFragment;
     private ArrayList<Module> moduleArrayList;
     private FirebaseStorage storage;
     private ProgressBar progressBar;
 
-    private Context context;
+    private Activity context;
     private static String extension = ".pdf";
     private static DownloadManager downloadManager;
     private static ArrayList<String> downloads;
 
     /**
      * ModuleRecyclerAdapter Constructor
-     * @param moduleFragment fragment instance
+     * @param context activity instance
      * @param moduleArrayList Array list of data
      * @param storage firebase storage instacne
      * @param progressBar progress bar instance
      */
-    public ModuleRecyclerAdapter(ModuleFragment moduleFragment, ArrayList<Module> moduleArrayList, FirebaseStorage storage,
+    public ModuleRecyclerAdapter(Activity context, ArrayList<Module> moduleArrayList, FirebaseStorage storage,
                                  ProgressBar progressBar) {
-        this.moduleFragment = moduleFragment;
         this.moduleArrayList = moduleArrayList;
         this.storage = storage;
         this.progressBar = progressBar;
-        this.context = moduleFragment.getActivity();
+        this.context = context;
     }
 
     @NonNull
     @Override
     public ModuleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        LayoutInflater layoutInflater = LayoutInflater.from(moduleFragment.getActivity());
+        LayoutInflater layoutInflater = LayoutInflater.from(context);
         View view = layoutInflater.inflate(R.layout.module_item, parent, false);
         downloads = new ArrayList<>();
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
@@ -82,8 +82,8 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         holder.type.setText(checkYear(moduleArrayList.get(position).getType()));
         SimpleDateFormat simpleDateFormat  =new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.US);
 
-        Typeface raleway_bold = Typeface.createFromAsset(moduleFragment.getActivity().getAssets(),"fonts/Raleway-Bold.ttf" );
-        Typeface raleway_regular = Typeface.createFromAsset(moduleFragment.getActivity().getAssets(),"fonts/Raleway-Regular.ttf" );
+        Typeface raleway_bold = Typeface.createFromAsset(context.getAssets(),"fonts/Raleway-Bold.ttf" );
+        Typeface raleway_regular = Typeface.createFromAsset(context.getAssets(),"fonts/Raleway-Regular.ttf" );
 
         holder.title.setTypeface(raleway_bold);
         holder.sub_title.setTypeface(raleway_regular);
@@ -127,7 +127,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 moduleArrayList.get(position).getFileName() + extension);
 
         if(file.exists()) {
-            Toast.makeText(moduleFragment.getActivity(), "Opening file from downloads", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Opening file from downloads", Toast.LENGTH_SHORT).show();
             openFile(file);
         } else if(downloads.contains(fileName)) {
             Toast.makeText(context, fileName + "already in download queue. Please check", Toast.LENGTH_SHORT).show();
@@ -138,7 +138,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 @Override
                 public void onSuccess(Uri uri) {
                     Log.d("Download Link", uri.toString());
-                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(moduleFragment.getActivity(), progressBar);
+                    DownloadFileFromURL downloadFileFromURL = new DownloadFileFromURL(context, progressBar);
                     downloadFileFromURL.execute(uri.toString(), moduleArrayList.get(position).getFileName(), moduleArrayList.get(position).getSubject());
 
                 }
@@ -146,7 +146,11 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Log.e("Fetching URL failed", moduleArrayList.get(position).getUrl());
-                    Toast.makeText(moduleFragment.getActivity(), "Download Failed", Toast.LENGTH_SHORT).show();
+                    try {
+                        Toast.makeText(context, "Download Failed", Toast.LENGTH_SHORT).show();
+                    } catch (Exception ex) {
+                        Crashlytics.logException(ex);
+                    }
                 }
             });
         }
@@ -197,7 +201,12 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
                 if(status == DownloadManager.STATUS_SUCCESSFUL) {
                     title = c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE));
                     downloads.remove(title);
-                    Toast.makeText(context, title + " downloaded", Toast.LENGTH_SHORT).show();
+                    try {
+                        Toast.makeText(context, title + " downloaded", Toast.LENGTH_SHORT).show();
+                    } catch (Exception ex) {
+                        Crashlytics.logException(ex);
+                    }
+
                 }
             }
         }
@@ -206,10 +215,10 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
     private static class DownloadFileFromURL extends AsyncTask<String, String, String> {
 
         private WeakReference<ProgressBar> progressBarRef;
-        private WeakReference<Context> mContextRef;
+        private WeakReference<Activity> mContextRef;
 
-        DownloadFileFromURL(Context context, ProgressBar progressBar){
-            this.mContextRef = new WeakReference<>(context);
+        DownloadFileFromURL(Activity context, ProgressBar progressBar){
+            this.mContextRef = new WeakReference<Activity>(context);
             this.progressBarRef = new WeakReference<>(progressBar);
 
         }
@@ -250,14 +259,18 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
             super.onPostExecute(s);
             ProgressBar progressBar = progressBarRef.get();
             progressBar.setVisibility(View.INVISIBLE);
-            Context mContext = mContextRef.get();
-            if(s.equals("failed")) {
-                progressBar.setVisibility(View.INVISIBLE);
-                Toast.makeText(mContext,s +  " download Failed", Toast.LENGTH_SHORT).show();
-            } else {
-
-                Toast.makeText(mContext, "Downloading " + s, Toast.LENGTH_SHORT).show();
+            try {
+                Context mContext = mContextRef.get();
+                if(s.equals("failed")) {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Toast.makeText(mContext,s +  " download Failed", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(mContext, "Downloading " + s, Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception ex) {
+                Crashlytics.logException(ex);
             }
+
         }
     }
 }

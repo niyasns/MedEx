@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:layout_margin="2dp"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textColor="@color/colorGrey"
             android:layout_gravity="center"
             android:text="Developed by"/>
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:layout_margin="2dp"
             android:textColor="@color/colorTransparentWhite"
             android:layout_gravity="center"
@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:layout_margin="2dp"
             android:textColor="@color/colorGrey"
             android:layout_gravity="center"
@@ -67,7 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textColor="@color/colorTransparentWhite"
             android:layout_gravity="center"
             android:text="jakob-grabner/Circle-Progress-View\nflorent37/MaterialTextField"/>
@@ -76,10 +76,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textColor="@color/colorTransparentWhite"
             android:layout_gravity="center"
             android:text="alexfu/CountDownView\nSpecialCyCi/AndroidResideMenu"/>
+        <TextView
+            android:id="@+id/contrib_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textColor="@color/colorTransparentWhite"
+            android:layout_gravity="center"
+            android:text="Icon made by Freepik from www.flaticon.com "/>
 
     </LinearLayout>
 

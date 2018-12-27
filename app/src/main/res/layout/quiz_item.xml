@@ -34,17 +34,25 @@
                 android:textColor="@color/colorSecondary" />
 
             <TextView
+                android:id="@+id/quiz_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="time"
+                android:textSize="18sp"
+                android:textColor="@color/colorTransparentWhite" />
+
+            <TextView
                 android:id="@+id/quiz_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SubTitle"
+                android:text="date"
                 android:textSize="18sp"
                 android:textColor="@color/colorTransparentWhite" />
 
         </LinearLayout>
 
         <TextView
-            android:id="@+id/quiz_time"
+            android:id="@+id/quiz_prize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="10:30"

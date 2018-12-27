@@ -23,13 +23,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.Arrays;
@@ -198,12 +201,20 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         FirebaseUser currentUser = mAuth.getCurrentUser();
         try {
             if(currentUser != null) {
-                if(!(currentUser.getDisplayName().isEmpty())) {
+                if(currentUser.getUid() == null) {
+                    Intent intent = new Intent(SignupDetailActivity.this, SignupActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } else {
+                    Log.d(TAG, currentUser.getUid());
+                    personId = currentUser.getUid();
+                }
+                if(currentUser.getDisplayName() != null) {
                     userName.setText(currentUser.getDisplayName());
                     personName = currentUser.getDisplayName();
                 }
 
-                if(!currentUser.getEmail().isEmpty()) {
+                if (currentUser.getEmail() != null) {
                     userEmail.setText(currentUser.getEmail());
                     userEmail.setFocusable(false);
                 }
@@ -213,17 +224,19 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
                 } else {
                     Picasso.get().load(currentUser.getPhotoUrl()).into(circleImageView);
                 }
-                personId = currentUser.getUid();
-
-            } else if(currentUser == null) {
+            } else {
                 Intent intent = new Intent(SignupDetailActivity.this, SignupActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         } catch (Exception e) {
             Crashlytics.log(Log.ERROR, TAG, e.getMessage());
+            Crashlytics.logException(e);
+            Intent intent = new Intent(SignupDetailActivity.this, SignupActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
             Toast.makeText(this, "Please try again later", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     private void addUserDataToFireStore() {
@@ -267,6 +280,12 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         {
             try{
                 user = new HashMap<>();
+                personId = mAuth.getCurrentUser().getUid();
+                if(personId == null) {
+                    Intent intent = new Intent(SignupDetailActivity.this, SignupActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
                 user.put("id", personId);
                 user.put("name", personName);
                 user.put("mobile", personMobile);
@@ -283,44 +302,62 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
                 Crashlytics.log(Log.ERROR, TAG, e.getMessage());
             }
 
+            db.collection("users").
+                    whereEqualTo("id", user.get("id"))
+                    .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-            db.collection("users")
-                    .add(user)
-                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                            db.collection("users").document(documentReference.getId())
-                                    .update("userId", documentReference.getId())
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    if(task.isSuccessful()) {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        if(querySnapshot.isEmpty()) {
+                            db.collection("users")
+                                    .add(user)
+                                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                         @Override
-                                        public void onSuccess(Void aVoid) {
-                                            progressBar.setVisibility(View.INVISIBLE);
-                                            Intent intent = new Intent(SignupDetailActivity.this, HomeActivity.class);
-                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            startActivity(intent);
+                                        public void onSuccess(DocumentReference documentReference) {
+                                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                                            db.collection("users").document(documentReference.getId())
+                                                    .update("userId", documentReference.getId())
+                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            progressBar.setVisibility(View.INVISIBLE);
+                                                            Intent intent = new Intent(SignupDetailActivity.this, HomeActivity.class);
+                                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                            startActivity(intent);
+                                                        }
+                                                    })
+                                                    .addOnFailureListener(new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Log.w(TAG, "Error adding document id", e);
+                                                            progressBar.setVisibility(View.INVISIBLE);
+                                                            mSignUp.setBackgroundResource(R.drawable.button_text_color);
+                                                            Toast.makeText(SignupDetailActivity.this, "Sign up Failed, Try Again", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Log.w(TAG, "Error adding document id", e);
+                                            Log.w(TAG, "Error adding document", e);
                                             progressBar.setVisibility(View.INVISIBLE);
                                             mSignUp.setBackgroundResource(R.drawable.button_text_color);
-                                            Toast.makeText(SignupDetailActivity.this, "Sign up Failed, Try Again", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(SignupDetailActivity.this, "Sign up Failed, Try Again", Toast.LENGTH_LONG).show();
                                         }
                                     });
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error adding document", e);
+                        } else {
+                            Toast.makeText(SignupDetailActivity.this, "User data existed", Toast.LENGTH_SHORT).show();
                             progressBar.setVisibility(View.INVISIBLE);
-                            mSignUp.setBackgroundResource(R.drawable.button_text_color);
-                            Toast.makeText(SignupDetailActivity.this, "Sign up Failed, Try Again", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(SignupDetailActivity.this, HomeActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
                         }
-                    });
+                    }
+                }
+            });
         }
         else if (!mobileOk)
         {
@@ -355,6 +392,7 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
     }
 
     private boolean validEmail(String email) {
+        Log.d(TAG, email);
         Pattern pattern = Patterns.EMAIL_ADDRESS;
         return pattern.matcher(email).matches();
     }

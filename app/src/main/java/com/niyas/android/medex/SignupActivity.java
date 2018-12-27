@@ -15,10 +15,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -96,6 +98,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setTimestampsInSnapshotsEnabled(true)
+                .setPersistenceEnabled(true)
                 .build();
         db.setFirestoreSettings(settings);
         mAuth = FirebaseAuth.getInstance();
@@ -206,9 +209,12 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()) {
                             Log.d(TAG, "signInWithCredential:success");
+                            boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user, "facebook");
+                            Crashlytics.log(Log.DEBUG, TAG, "New facebook user: " + user.getUid());
+                            updateUI(user, "facebook", isNew);
                         } else {
+                            Crashlytics.log("Facebook login fails");
                             Log.w(TAG, "signInWithCredential:failure" + task.getException().getMessage());
                             Toast.makeText(SignupActivity.this, "Account already exist for provided email.\n" +
                                             "Please login with another account",
@@ -272,8 +278,10 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
+                            boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user, "google");
+                            Crashlytics.log(Log.DEBUG, TAG, "New google user: " + user.getUid());
+                            updateUI(user, "google", isNew);
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(SignupActivity.this, "Account already exist for provided email.\n" +
@@ -291,37 +299,49 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 });
     }
 
-    private void updateUI(FirebaseUser user, final String source) {
+    private void updateUI(FirebaseUser user, final String source, boolean isNew) {
 
         if(user != null)
         {
-            CollectionReference usersReference = db.collection("users");
-            Query query = usersReference.whereEqualTo("email", user.getEmail());
-            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot queryResult = task.getResult();
-                        if (!queryResult.isEmpty()) {
-                            Log.d(TAG, "Registered user details " + queryResult.getDocuments());
-                            progressBar.setVisibility(View.INVISIBLE);
-                            Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
+
+            if(isNew) {
+                Crashlytics.log(Log.DEBUG, TAG, "New user found");
+                Log.d(TAG, source);
+                progressBar.setVisibility(View.INVISIBLE);
+                Intent intent = new Intent(SignupActivity.this, SignupDetailActivity.class);
+                intent.putExtra("source",source);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } else if(user.getUid() != null){
+                CollectionReference usersReference = db.collection("users");
+                Query query = usersReference.whereEqualTo("id", user.getUid());
+                Log.d(TAG, user.getUid());
+                query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            QuerySnapshot queryResult = task.getResult();
+                            if (!queryResult.isEmpty()) {
+                                Crashlytics.log(Log.DEBUG, TAG, "Registered user details " + queryResult.getDocuments());
+                                progressBar.setVisibility(View.INVISIBLE);
+                                Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            } else {
+                                Crashlytics.log(Log.DEBUG, TAG, "User without data found");
+                                Log.d(TAG, source);
+                                progressBar.setVisibility(View.INVISIBLE);
+                                Intent intent = new Intent(SignupActivity.this, SignupDetailActivity.class);
+                                intent.putExtra("source",source);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
                         } else {
-                            Log.d(TAG, "New User found");
-                            Log.d(TAG, source);
-                            progressBar.setVisibility(View.INVISIBLE);
-                            Intent intent = new Intent(SignupActivity.this, SignupDetailActivity.class);
-                            intent.putExtra("source",source);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
+                            Log.d(TAG, "New user check get failed with ", task.getException());
                         }
-                    } else {
-                        Log.d(TAG, "New user check get failed with ", task.getException());
                     }
-                }
-            });
+                });
+            }
 
         } else {
             mFSignUpButton.setEnabled(true);

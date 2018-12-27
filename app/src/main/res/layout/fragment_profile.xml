@@ -36,7 +36,7 @@
             android:layout_marginBottom="4dp"
             android:layout_marginTop="8dp"
             android:hint="@string/username"
-            android:background="@drawable/rounded_button"
+            android:background="@drawable/rounded_spinner"
             android:textColor="@color/colorTransparentWhite"
             android:textSize="18sp"/>
 
@@ -52,7 +52,7 @@
             android:layout_marginTop="8dp"
             android:hint="@string/email"
             android:focusable="false"
-            android:background="@drawable/rounded_button"
+            android:background="@drawable/rounded_spinner"
             android:textColor="@color/colorTransparentWhite"
             android:textSize="18sp" />
 
@@ -70,7 +70,7 @@
             android:hint="@string/mobile_no"
             android:maxLines="1"
             android:inputType="phone"
-            android:background="@drawable/rounded_button"
+            android:background="@drawable/rounded_spinner"
             android:textColor="@color/colorTransparentWhite"
             android:textSize="18sp" />
 
@@ -94,7 +94,7 @@
                     android:id="@+id/placeLayoutFrag"
                     android:layout_width="0dp"
                     android:layout_height="55dp"
-                    android:background="@drawable/rounded_button"
+                    android:background="@drawable/rounded_spinner"
                     android:tooltipText="District"
                     android:layout_marginBottom="4dp"
                     android:layout_marginEnd="3dp"
@@ -107,7 +107,7 @@
                     android:id="@+id/groupLayoutFrag"
                     android:layout_width="0dp"
                     android:layout_height="55dp"
-                    android:background="@drawable/rounded_button"
+                    android:background="@drawable/rounded_spinner"
                     android:layout_marginBottom="4dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginStart="2dp"

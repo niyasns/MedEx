@@ -1,6 +1,8 @@
 package com.niyas.android.medex;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.support.v4.app.Fragment;
 import android.content.DialogInterface;
@@ -17,8 +19,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -34,6 +38,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -65,6 +70,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     FirebaseFirestore db;
     FirebaseDatabase firebaseDatabase;
     FirebaseAuth mAuth;
+    static FirebaseFirestoreSettings settings;
     /* List to load quizes available from the database.*/
     static ArrayList<QuizSet> quizSets;
     /*List to load year details for module fragment */
@@ -176,6 +182,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
     /* Setting up firebase listeners for quiz set and quiz start events */
     private void setupFirebase() {
+        settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .build();
         firebaseDatabase = FirebaseDatabase.getInstance();
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -187,6 +196,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private void firebaseQuizStartListener() {
 
         DatabaseReference databaseReference = firebaseDatabase.getReference("qNo");
+        databaseReference.keepSynced(true);
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -248,6 +258,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     /* Method to load quiz details from firebase */
     static private void firebaseLoadQuizSet() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.enableNetwork();
         final CollectionReference quizRef = db.collection("quizes");
         quizRef.whereEqualTo("completed",false)
                 .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(20)
@@ -300,7 +311,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         }
 
                     }
-                    Log.d(TAG, "Complete subject list : \n" + yearList.get(0).getTopics().toString());
                 } else {
                     Log.d(TAG, "Year details loading unsuccessful");
                 }
@@ -368,6 +378,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     /* Logout method */
     private void logOut() {
         mAuth.signOut();
+        LoginManager.getInstance().logOut();
         finish();
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         finishAffinity();

@@ -61,7 +61,7 @@
             android:text="View"
             android:textSize="18sp"
             android:textColor="@color/colorSecondary"
-            android:background="@drawable/rounded_button"
+            android:background="@color/colorTransparentBlackExtra"
             android:padding="4dp" />
 
 

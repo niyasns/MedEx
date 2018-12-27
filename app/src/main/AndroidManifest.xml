@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-library android:name="org.apache.http.legacy" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -19,6 +18,7 @@
         android:roundIcon="@mipmap/ic_logo_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <uses-library android:name="org.apache.http.legacy" android:required="false" />
         <activity android:name="com.niyas.android.medex.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

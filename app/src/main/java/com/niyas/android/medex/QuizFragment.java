@@ -173,6 +173,7 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
     private void setupFirebaseRealtimeListner() {
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("qNo");
+        databaseReference.keepSynced(true);
         valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

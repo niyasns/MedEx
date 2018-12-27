@@ -26,6 +26,8 @@
             xmlns:card_view="http://schemas.android.com/apk/res-auto"
             android:id="@+id/linearLayout"
             android:layout_width="wrap_content"
+            android:paddingTop="6dp"
+            android:paddingBottom="4dp"
             android:layout_height="wrap_content"
             card_view:cardBackgroundColor="@android:color/transparent"
             card_view:cardElevation="2dp">
@@ -75,16 +77,22 @@
                 android:layout_weight="1.8">
             </FrameLayout>
 
-            <com.google.android.gms.ads.AdView
-                android:id="@+id/adView"
-                android:background="@color/colorBlack"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="0.2"
-                ads:adSize="BANNER"
-                ads:adUnitId="@string/banner_ad_unit_id">
-            </com.google.android.gms.ads.AdView>
+                android:orientation="vertical"
+                android:background="@color/colorTransparentBlackExtra"
+                android:layout_weight="0.2">
 
+                <com.google.android.gms.ads.AdView
+                    android:id="@+id/adView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    ads:adSize="BANNER"
+                    ads:adUnitId="@string/banner_ad_unit_id">
+                </com.google.android.gms.ads.AdView>
+
+            </LinearLayout>
 
         </LinearLayout>
 

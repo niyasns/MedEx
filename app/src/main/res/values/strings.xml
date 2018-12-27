@@ -22,8 +22,14 @@
     <string name="update">UPDATE</string>
     <string name="profile">Profile</string>
     <string name="banner_ad_unit_id">ca-app-pub-5476381757988116/8968833072</string>
+    <string name="pdf_banner_ad_unit_id">ca-app-pub-5476381757988116/8242447838</string>
     <string name="facebook_app_id">1823383777782349</string>
     <string name="fb_login_protocol_scheme">fb1823383777782349</string>
     <string name="videos">Videos</string>
+    <string name="Rs">\u20B9</string>
+
+    <string name="title_activity_pdf_viewer">PdfViewer</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>

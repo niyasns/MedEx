@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.special.ResideMenu.ResideMenu;
 
@@ -111,6 +112,7 @@ public class HomeFragment extends android.support.v4.app.Fragment implements Vie
     /* Logout button */
     private void logOut() {
         mAuth.signOut();
+        LoginManager.getInstance().logOut();
         Intent intent = new Intent(parentActivity, MainActivity.class);
         parentActivity.finishAffinity();
         startActivity(intent);
