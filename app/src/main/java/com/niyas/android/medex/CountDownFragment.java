@@ -92,7 +92,8 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
         progressBar.setVisibility(View.VISIBLE);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final CollectionReference quizRef = db.collection("quizes");
-        quizRef.whereEqualTo("completed",false)
+        quizRef.whereEqualTo("started",false)
+                .whereEqualTo("completed", false)
                 .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(20)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -180,12 +181,12 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
         no_data.setGravity(Gravity.CENTER);
 
 
-        no_quiz.setText("Waiting for quiz initialization");
+        no_quiz.setText("Check after some time");
         no_quiz.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
         no_quiz.setTypeface(raleway_regular);
         no_quiz.setTextSize(24);
         no_quiz.setGravity(Gravity.CENTER);
-        no_quiz.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        no_quiz.setVisibility(View.INVISIBLE);
 
         heading.setTypeface(raleway_bold);
         quizCountText.setTypeface(raleway_regular);
