@@ -1,15 +1,13 @@
 package com.niyas.android.medex;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -17,9 +15,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.login.LoginManager;
@@ -27,13 +26,11 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,13 +39,18 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 import com.special.ResideMenu.ResideMenu;
 import com.special.ResideMenu.ResideMenuItem;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import javax.annotation.Nullable;
+
+import io.fabric.sdk.android.Fabric;
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -66,37 +68,39 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ResideMenuItem itemLogout;
     ResideMenuItem itemCredits;
     ResideMenuItem itemVideos;
+    ResideMenuItem itemPrivacyPolicy;
     /* Firebase variables */
-    FirebaseFirestore db;
-    FirebaseDatabase firebaseDatabase;
-    FirebaseAuth mAuth;
-    static FirebaseFirestoreSettings settings;
+    static FirebaseFirestore db;
+    static FirebaseDatabase firebaseDatabase;
+    static FirebaseAuth mAuth;
     /* List to load quizes available from the database.*/
     static ArrayList<QuizSet> quizSets;
     /*List to load year details for module fragment */
     static ArrayList<Year> yearList;
     /*List to load year details for module fragment */
     static ArrayList<Year> tempList;
-    /* Boolean to identify initial application instance. */
-    boolean isInital = true;
-    /* Intent for background sound service*/
-    Intent svc;
-    private float x1, x2;
-    static final int MIN_DISTANCE = 200;
-    private long startClickTime;
+    private static Date current;
+    private static Date quizDate;
+    private static CountDownTimer quizTimer = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.home_activity);
-
+        Fabric.with(this, new Crashlytics());
         initView();
         initAdView();
         initQuizList();
         setupMenu();
+        //setupHandlers();
         setupFirebase();
+        firebaseQuizStartTimer();
         /* Load home fragemnt initially */
         if (savedInstanceState == null) {
+            Crashlytics.log(Log.DEBUG, TAG, "Home fragment loaded");
             changeFragment(new HomeFragment());
         }
         /* Listener to display reside menu onclick */
@@ -137,9 +141,14 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        isInital = true;
         stopService(new Intent(this, BackgroundSoundService.class));
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
     /* Traps back button events during quiz time */
     @Override
     public void onBackPressed() {
@@ -165,7 +174,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     .setCancelable(false)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            finish();
+                            finishAffinity();
                         }
                     })
                     .setNegativeButton("No", null)
@@ -178,60 +187,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static private void setupNavigation() {
 
         resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
-        resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
+        //resideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_LEFT);
     }
     /* Setting up firebase listeners for quiz set and quiz start events */
     private void setupFirebase() {
-        settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .build();
         firebaseDatabase = FirebaseDatabase.getInstance();
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        new QuizSetLoadAsync().execute();
+        FirebaseFirestore.setLoggingEnabled(true);
+     /*   firebaseLoadQuizSet();
+        firebaseLoadSubjects();*/
         firebaseQuizSetListener();
-        firebaseQuizStartListener();
-    }
-    /* Firebase listener to trap quiz start events */
-    private void firebaseQuizStartListener() {
-
-        DatabaseReference databaseReference = firebaseDatabase.getReference("qNo");
-        databaseReference.keepSynced(true);
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                android.support.v4.app.Fragment current = getSupportFragmentManager().findFragmentById(R.id.frame_window);
-                Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Quiz Fragment :" + (current instanceof QuizFragment));
-                Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "isInitial:" + isInital);
-                Long temp = dataSnapshot.getValue(Long.class);
-                Log.d(TAG, "Value is: " + temp);
-
-                if (!(current instanceof QuizFragment) && !isInital) {
-                    if(temp != null){
-                        if(temp == 0) {
-                            changeFragment(new QuizFragment());
-                        }
-                    } else {
-                        Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Question number is null");
-                    }
-                } else {
-                    isInital = false;
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", databaseError.toException());
-
-            }
-        });
     }
 
-    public void setIsInitial() {
-        isInital = true;
-    }
     /* Firebase listener for changes in quiz data */
     private void firebaseQuizSetListener() {
 
@@ -246,9 +214,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                 if (queryDocumentSnapshots != null) {
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz list change event", "Quiz List changed");
-                    if(!isInital) {
-                        new QuizSetLoadAsync().execute();
-                    }
+                    firebaseLoadQuizSet();
+                    firebaseLoadSubjects();
                 } else {
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz list change event", "Current data : null");
                 }
@@ -257,35 +224,130 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     }
     /* Method to load quiz details from firebase */
     static private void firebaseLoadQuizSet() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.enableNetwork();
+        quizSets.clear();
+        Crashlytics.log(Log.DEBUG, TAG , "Loading quizset");
         final CollectionReference quizRef = db.collection("quizes");
-        quizRef.whereEqualTo("completed",false)
+        quizRef.whereEqualTo("started",false)
+                .whereEqualTo("completed", false)
                 .orderBy("scheduledTime", Query.Direction.ASCENDING).limit(20)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    quizSets.clear();
+                    progressBar.setVisibility(View.INVISIBLE);
+                    Integer i = 0;
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         QuizSet quizSet = document.toObject(QuizSet.class);
                         quizSets.add(quizSet);
-                        Log.d(TAG, quizSet.getScheduledTime().toDate().toString());
+                        Crashlytics.log(Log.DEBUG, TAG , "QuizList: " + quizSets.get(i++).getQuizId());
                     }
+                    Crashlytics.log(Log.DEBUG, TAG , "Quiz list reloaded");
                 } else {
+                    progressBar.setVisibility(View.INVISIBLE);
                     Crashlytics.log(Log.DEBUG, TAG + ": Quiz list loading", "Error getting documents : " + task.getException());
+                }
+            }
+        });
+    }
+
+    private void firebaseQuizStartTimer() {
+
+        final CollectionReference quizRef = db.collection("quizes");
+
+        quizRef.orderBy("scheduledTime", Query.Direction.ASCENDING)
+                .whereEqualTo("started", false)
+                .whereEqualTo("completed", false)
+                .limit(1)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@android.support.annotation.Nullable QuerySnapshot value,
+                                        @android.support.annotation.Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        if (value != null) {
+                            Log.d(TAG, "Change in scheduled time");
+                            for (QueryDocumentSnapshot doc : value) {
+                                if (doc.get("scheduledTime") != null) {
+                                    Timestamp timestamp = doc.getTimestamp("scheduledTime");
+                                    quizDate = timestamp.toDate();
+                                    Log.d(TAG, "Start timer: " + quizDate.toString());
+                                    firebaseResetTimer();
+                                }
+                            }
+                        } else {
+                            Crashlytics.log("No quizes found for start timer");
+                        }
+                    }
+                });
+    }
+
+    void firebaseResetTimer() {
+
+        FirebaseFunctions.getInstance().getHttpsCallable("getTime")
+                .call().addOnSuccessListener(new OnSuccessListener<HttpsCallableResult>() {
+            @Override
+            public void onSuccess(HttpsCallableResult httpsCallableResult) {
+                long timestamp = (long) httpsCallableResult.getData();
+                current = new Date(timestamp);
+                try {
+                    Log.d(TAG, current.toString());
+                } catch (NullPointerException e) {
+                    Log.d(TAG, "Current date null");
+                }
+
+                long diff = quizDate.getTime() - current.getTime();
+
+                if(quizTimer != null) {
+                    Crashlytics.log(Log.DEBUG, TAG + "Firebase Reset Timer", "Cancelling current timer");
+                    quizTimer.cancel();
+                }
+
+                if(diff > 0){
+                    quizTimer = new CountDownTimer(diff, 1000) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            Log.d(TAG, "seconds remaining: " + millisUntilFinished / 1000);
+                            Long secondRemain = millisUntilFinished / 1000;
+                            if(secondRemain == 20) {
+                                if(quizSets.isEmpty()) {
+                                    Crashlytics.log(Log.DEBUG, TAG + "Firebase Reset Timer", "Quiz set is null");
+                                    firebaseLoadQuizSet();
+                                    firebaseLoadSubjects();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            android.support.v4.app.Fragment current = getSupportFragmentManager().findFragmentById(R.id.frame_window);
+                            Crashlytics.log(Log.DEBUG, TAG + ": Quiz start event", "Quiz Fragment :" + (current instanceof QuizFragment));
+
+                            if (!(current instanceof QuizFragment)) {
+                                changeFragment(new QuizFragment());
+                            } else {
+                                // isInital = false;
+                            }
+                        }
+                    };
+                    quizTimer.start();
                 }
             }
         });
     }
     /* Method to load subject details for modules fragment */
     static private void firebaseLoadSubjects() {
-        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        progressBar.setVisibility(View.VISIBLE);
         final CollectionReference yearRef = db.collection("years");
         yearRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()) {
+                    progressBar.setVisibility(View.INVISIBLE);
                     Log.d(TAG, "Year details Loading");
                     Integer j = 0;
 
@@ -312,6 +374,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
                     }
                 } else {
+                    progressBar.setVisibility(View.INVISIBLE);
                     Log.d(TAG, "Year details loading unsuccessful");
                 }
             }
@@ -325,28 +388,21 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         resideMenu.attachToActivity(this);
 
         itemHome = new ResideMenuItem(this, R.drawable.ic_home, "Home");
-        itemQuiz = new ResideMenuItem(this, R.drawable.ic_quiz, "Quiz");
-        itemModule = new ResideMenuItem(this, R.drawable.ic_module, "Modules");
-        itemVideos = new ResideMenuItem(this, R.drawable.ic_video, "Videos");
-        itemProfile = new ResideMenuItem(this, R.drawable.ic_profile, "Profile");
         itemCredits = new ResideMenuItem(this, R.drawable.ic_credits, "Credits");
+        itemPrivacyPolicy = new ResideMenuItem(this, R.drawable.ic_privacy, "Privacy");
         itemLogout = new ResideMenuItem(this, R.drawable.ic_logout, "Logout");
 
         itemHome.setOnClickListener(this);
-        itemQuiz.setOnClickListener(this);
-        itemModule.setOnClickListener(this);
-        itemVideos.setOnClickListener(this);
-        itemProfile.setOnClickListener(this);
         itemCredits.setOnClickListener(this);
+        itemPrivacyPolicy.setOnClickListener(this);
         itemLogout.setOnClickListener(this);
 
         resideMenu.addMenuItem(itemHome, ResideMenu.DIRECTION_LEFT);
-        resideMenu.addMenuItem(itemQuiz, ResideMenu.DIRECTION_LEFT);
-        resideMenu.addMenuItem(itemModule, ResideMenu.DIRECTION_LEFT);
-        resideMenu.addMenuItem(itemVideos, ResideMenu.DIRECTION_LEFT);
-        resideMenu.addMenuItem(itemProfile, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemCredits, ResideMenu.DIRECTION_LEFT);
+        resideMenu.addMenuItem(itemPrivacyPolicy, ResideMenu.DIRECTION_LEFT);
         resideMenu.addMenuItem(itemLogout, ResideMenu.DIRECTION_LEFT);
+
+        setupNavigation();
     }
 
     @Override
@@ -359,16 +415,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         if (v == itemHome) {
             changeFragment(new HomeFragment());
-        } else if(v == itemQuiz) {
-            changeFragment(new CountDownFragment());
-        } else if (v == itemModule) {
-            changeFragment(new ModuleFragment());
-        } else if (v == itemVideos) {
-            changeFragment(new VideosFragment());
-        } else if (v == itemProfile) {
-            changeFragment(new ProfileFragment());
         } else if (v == itemCredits) {
             changeFragment(new CreditsFragment());
+        } else if (v == itemPrivacyPolicy) {
+            changeFragment(new PrivacyFragment());
         } else if (v == itemLogout) {
             logOut();
         }
@@ -381,6 +431,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         LoginManager.getInstance().logOut();
         finish();
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         finishAffinity();
         startActivity(intent);
     }
@@ -389,7 +440,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         resideMenu.clearIgnoredViewList();
         /* Playing background service for quiz fragement */
-        if(targetFragment instanceof QuizFragment) {
+    /*    if(targetFragment instanceof QuizFragment) {
             svc = new Intent(this, BackgroundSoundService.class);
             svc.putExtra("quiz_name", quizSets.get(0).getTitle());
             svc.putExtra("quiz_timeout",quizSets.get(0).getTimeOut());
@@ -400,7 +451,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "ELSE API LEVEL = " + Build.VERSION.SDK_INT);
                 startService(svc);
             }
-        }
+        }*/
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -419,7 +470,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressBar.setVisibility(View.VISIBLE);
+
         }
 
         @Override
