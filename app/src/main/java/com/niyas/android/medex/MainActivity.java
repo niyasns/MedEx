@@ -3,9 +3,15 @@ package com.niyas.android.medex;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.graphics.drawable.AnimationDrawable;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -13,11 +19,15 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,12 +36,16 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.onesignal.OneSignal;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
 
 import io.fabric.sdk.android.Fabric;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
@@ -47,39 +61,108 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    /**
-     * variable to limit firebase settings to execute once.
-     */
-    private static boolean isfirst = true;
+    static boolean isUserLogged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
-        setContentView(R.layout.activity_main);
-
+        // OneSignal Initialization
+        OneSignal.startInit(this)
+                .inFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification)
+                .unsubscribeWhenNotificationsAreDisabled(true)
+                .init();
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         initFirebase();
+        if(mAuth.getCurrentUser() != null) {
+            Crashlytics.log(Log.DEBUG, TAG, "User logged in");
+            setContentView(R.layout.splash_screen);
+            Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
+            TextView splash_subtitle1 = findViewById(R.id.splash_subTitleOne);
+            TextView splash_subtitle2 = findViewById(R.id.splash_subTitleTwo);
+            splash_subtitle1.setTypeface(raleway_regular);
+            splash_subtitle2.setTypeface(raleway_regular);
+
+            RelativeLayout movingBackground = findViewById(R.id.moving_background);
+            AnimationDrawable animationDrawable = (AnimationDrawable) movingBackground.getBackground();
+            animationDrawable.setEnterFadeDuration(1500);
+            animationDrawable.setExitFadeDuration(1500);
+            animationDrawable.start();
+
+            startSplashWithLogin(mAuth.getCurrentUser().getUid());
+        } else {
+            Crashlytics.log(Log.DEBUG, TAG, "User not logged in");
+            startWithoutSplash();
+        }
+    }
+
+    private void startSplashWithLogin(String userid) {
+        CollectionReference usersReference = db.collection("users");
+        Query query = usersReference.whereEqualTo("id", userid);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    QuerySnapshot queryResult = task.getResult();
+                    if (!queryResult.isEmpty()) {
+                        isUserLogged = true;
+                        Crashlytics.log(Log.ERROR, TAG, "Registered user");
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                                finishAffinity();
+                            }
+                        }, 4000);
+                    } else {
+                        isUserLogged = true;
+                        Crashlytics.log(Log.ERROR, TAG, "User with data null");
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent intent = new Intent(MainActivity.this, SignupDetailActivity.class);
+                                startActivity(intent);
+                            }
+                        }, 2000);
+
+                    }
+                } else {
+                    isUserLogged = false;
+                    Log.d(TAG, "New user check get failed with ", task.getException());
+                    startWithoutSplash();
+                }
+            }
+        });
+    }
+
+    private void startWithoutSplash() {
+        setContentView(R.layout.activity_main);
         initCalligraphy();
         initView();
         loginPageButton.setOnClickListener(this);
     }
-    /*
-    Setting up components for the activity.
+
+
+    /**
+     Setting up components for the activity.
      */
     private void initView() {
-        /*
-        Setting "LOGIN" button with raleway font.
+        /**
+         Setting "LOGIN" button with raleway font.
          */
         loginPageButton = findViewById(R.id.view_pager_signup);
         Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
         loginPageButton.setTypeface(raleway_regular);
-        /*
-        Setting progress bar and making it invisible.
+        /**
+         Setting progress bar and making it invisible.
          */
         progressBar = findViewById(R.id.progressbar);
         progressBar.setVisibility(View.INVISIBLE);
-        /*
-        Setting view pager
+        /**
+         Setting view pager
          */
         ViewPager mSlideViewPager = findViewById(R.id.view_pager);
         mDotLayout = findViewById(R.id.dots_layout);
@@ -88,9 +171,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addDotsIndicator(0);
         mSlideViewPager.addOnPageChangeListener(viewListener);
     }
-    /*
+    /**
      Initializing Calligraphy font library for raleway font.
-    */
+     */
     private void initCalligraphy() {
 
         ViewPump.init(ViewPump.builder()
@@ -108,30 +191,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initFirebase() {
 
         db = FirebaseFirestore.getInstance();
-        if(isfirst) {
-            Crashlytics.log(Log.DEBUG, TAG, "Initial app loading: FirebaseSettings initialized");
-            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                    .setTimestampsInSnapshotsEnabled(true)
-                    .build();
-            db.setFirestoreSettings(settings);
-            isfirst = false;
-        } else {
-            Crashlytics.log(Log.DEBUG, TAG, "FirebaseSettings initialization skipped");
-        }
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
         mAuth = FirebaseAuth.getInstance();
     }
-    /*
-    Checking external storage permissions for downloading files.
+    /**
+     Checking external storage permissions for downloading files.
      */
     public void isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 Log.v(TAG,"Permission is granted");
                 loginAfterPermission();
             } else {
                 Log.v(TAG,"Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             }
         }
         else { //permission is automatically granted on sdk<23 upon installation
@@ -145,7 +223,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
             case 1:
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if(grantResults.length > 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                        grantResults[1] == PackageManager.PERMISSION_GRANTED ) {
                     loginAfterPermission();
                 } else {
                     loginPageButton.setBackgroundResource(R.drawable.rounded_button);
@@ -263,6 +342,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
+                            finishAffinity();
                         } else {
                             Log.d(TAG, "New User found");
                             progressBar.setVisibility(View.INVISIBLE);
