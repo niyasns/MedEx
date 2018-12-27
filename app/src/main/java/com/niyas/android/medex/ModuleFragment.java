@@ -260,7 +260,7 @@ public class ModuleFragment extends android.support.v4.app.Fragment {
     private void handleSubject(Integer index) {
         yearIndex = index;
         yearFirebase = index + 1;
-        if(!subjectList.isEmpty()) {
+        if(!subjectList.isEmpty() && index < subjectList.size()) {
             ArrayList<String> subjects = subjectList.get(index).getSubList();
             if(subjects.isEmpty()) {
                 String[] topicTemp = {"Subject"};
@@ -272,6 +272,8 @@ public class ModuleFragment extends android.support.v4.app.Fragment {
                 subjectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 moduleSubject.setAdapter(subjectAdapter);
             }
+        } else {
+            Toast.makeText(getActivity(), "Invalid subject", Toast.LENGTH_SHORT).show();
         }
     }
     /* Loading files data from firebase */
@@ -364,6 +366,5 @@ public class ModuleFragment extends android.support.v4.app.Fragment {
             }
         });
     }
-
 
 }
