@@ -181,10 +181,10 @@ public class HomeFragment extends android.support.v4.app.Fragment implements Vie
             } else {
                 Log.e(TAG, "JSON string null");
             }
-            Integer length = 0;
-            if(tipOfTheDay.get("length") != null){
+            Integer length = 251;
+         /*   if(!tipOfTheDay.get("length").isEmpty()){
                 length = Integer.parseInt(tipOfTheDay.get("length"));
-            }
+            }*/
             if(tipOfTheDay.size() == 0 || length > 250) {
                 tipOfTheDay.put("quote", "If we’re not stretching, we’re not growing. If we’re not growing, we’re probably " +
                         "not fulfilling our potential. The only person in this room that knows your potential is you.");
