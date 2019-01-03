@@ -93,6 +93,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     * Initializing Firebase
+     */
+    private void initFirebase() {
+
+        db = FirebaseFirestore.getInstance();
+        /*FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);*/
+        mAuth = FirebaseAuth.getInstance();
+    }
+
     private void startSplashWithLogin(String userid) {
         CollectionReference usersReference = db.collection("users");
         Query query = usersReference.whereEqualTo("id", userid);
@@ -181,18 +194,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build());
     }
 
-    /**
-     * Initializing Firebase
-     */
-    private void initFirebase() {
-
-        db = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        db.setFirestoreSettings(settings);
-        mAuth = FirebaseAuth.getInstance();
-    }
     /**
      Checking external storage permissions for downloading files.
      */
