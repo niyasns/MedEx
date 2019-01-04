@@ -100,10 +100,6 @@ public class SignupDetailActivity extends AppCompatActivity implements View.OnCl
         final Typeface raleway_regular = Typeface.createFromAsset(this.getAssets(),"fonts/Raleway-Regular.ttf" );
 
         db = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        db.setFirestoreSettings(settings);
         mAuth = FirebaseAuth.getInstance();
 
         userName = findViewById(R.id.username);
