@@ -91,6 +91,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
     }
 
     private void setupAuthStateListener() {
@@ -100,7 +101,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
                 firebaseUser = mAuth.getCurrentUser();
                 if(firebaseUser != null) {
                     readUserDetails();
-                } else {
+                } else if(getActivity() != null){
                     mAuth.signOut();
                     Intent intent = new Intent(getActivity(), SignupActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
