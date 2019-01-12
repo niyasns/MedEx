@@ -22,6 +22,9 @@ import android.widget.Toast;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +41,8 @@ public class PdfViewer extends AppCompatActivity {
     private static final String TAG = "PdfViewer";
     WebView webView;
     PDFView pdfView;
+    Boolean onStop = false;
+    Boolean onPause = false;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -49,6 +54,7 @@ public class PdfViewer extends AppCompatActivity {
 //        this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         setContentView(R.layout.activity_pdf_viewer);
 
+        initAdView();
         Intent intent = getIntent();
         File file = (File) intent.getSerializableExtra("file");
         String url = (String) intent.getStringExtra("url");
@@ -114,6 +120,42 @@ public class PdfViewer extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Pdf loading failed", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        onPause = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        onStop = true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(onStop) {
+            Log.d(TAG, "taskroot entered");
+            Intent intent = new Intent(this, HomeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        } else {
+            super.onBackPressed();
+        }
+
+        //super.onBackPressed();
+    }
+
+    /* Initializing AdView */
+    private void initAdView() {
+
+        MobileAds.initialize(this, "ca-app-pub-5476381757988116~3744426550");
+        AdView mAdview = findViewById(R.id.adViewPdf);
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        mAdview.loadAd(adRequest);
     }
 
 /*

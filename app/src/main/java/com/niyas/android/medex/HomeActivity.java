@@ -112,6 +112,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
     /* Initialzing view for the activity */
     private void initView() {
 
