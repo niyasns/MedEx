@@ -1,5 +1,6 @@
 package com.niyas.android.medex;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -87,6 +88,11 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
         return parentView;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
     private void setupAuthStateListener() {
         mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
             @Override
@@ -96,9 +102,8 @@ public class ProfileFragment extends android.support.v4.app.Fragment implements 
                     readUserDetails();
                 } else {
                     mAuth.signOut();
-                    getActivity().finish();
-                    getActivity().finishAffinity();
                     Intent intent = new Intent(getActivity(), SignupActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                 }
             }
