@@ -92,7 +92,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.home_activity);
         Fabric.with(this, new Crashlytics());
         initView();
-        initAdView();
         initQuizList();
         setupMenu();
         //setupHandlers();
@@ -133,14 +132,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         tempList =new ArrayList<>();
         quizSets.clear();
         yearList.clear();
-    }
-    /* Initializing AdView */
-    private void initAdView() {
-        MobileAds.initialize(this, "ca-app-pub-5476381757988116~3744426550");
-        AdView mAdview = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder()
-                .build();
-        mAdview.loadAd(adRequest);
     }
 
     @Override

@@ -25,10 +25,12 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -55,8 +57,9 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
     ConnectivityManager conMgr;
     NetworkInfo activeNetwork;
-    Button mGSignUpButton;
-    Button mFSignUpButton;
+    SignInButton mGSignUpButton;
+    LoginButton mFSignUpButton;
+    TextView gTextView;
 
     TextView mSubTitleOne;
     TextView mSubTitleTwo;
@@ -80,12 +83,16 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.signup_activity);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         callbackManager = CallbackManager.Factory.create();
         loginManager = LoginManager.getInstance();
 
         mGSignUpButton = findViewById(R.id.g_signup);
         mFSignUpButton = findViewById(R.id.f_signup);
 
+        gTextView = (TextView) mGSignUpButton.getChildAt(0);
+        gTextView.setText(R.string.signup_google);
+        gTextView.setTextSize(18);
 
         mSubTitleOne = findViewById(R.id.subTitleOne);
         mSubTitleTwo = findViewById(R.id.subTitleTwo);
@@ -96,12 +103,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         mSubTitleOne.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Bold.ttf"));
         mSubTitleTwo.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Regular.ttf"));
 
-        mFSignUpButton.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Regular.ttf"));
-        mGSignUpButton.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Raleway-Regular.ttf"));
-
         mGSignUpButton.setOnClickListener(this);
         mFSignUpButton.setOnClickListener(this);
-        mAuth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.server_client_id))
@@ -109,6 +112,32 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // Initialize Facebook Login button
+        mFSignUpButton.setReadPermissions("email", "public_profile");
+        mFSignUpButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+                progressBar.setVisibility(View.INVISIBLE);
+                mFSignUpButton.setEnabled(true);
+                mGSignUpButton.setEnabled(true);
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(TAG, "facebook:onError", error);
+                progressBar.setVisibility(View.INVISIBLE);
+                mFSignUpButton.setEnabled(true);
+                mGSignUpButton.setEnabled(true);
+            }
+        });
     }
 
     @Override
@@ -122,7 +151,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         if(currentUser != null)
         {
-            mGSignUpButton.setText(getResources().getString(R.string.login_google));
+            gTextView.setText(getResources().getString(R.string.login_google));
             Toast.makeText(this, currentUser.getDisplayName() + " already signed up with google", Toast.LENGTH_SHORT).show();
         }
     }
@@ -162,42 +191,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     private void fSignUp() {
 
         progressBar.setVisibility(View.VISIBLE);
-        mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
-        mFSignUpButton.setTextColor(R.drawable.button_text_color_home_onclick);
         mFSignUpButton.setEnabled(false);
         mGSignUpButton.setEnabled(false);
-        loginManager.logInWithReadPermissions(SignupActivity.this, Arrays.asList("email", "public_profile"));
-        loginManager.registerCallback(callbackManager,
-                new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        Log.d(TAG, "facebook:onSuccess:" + loginResult);
-                        if(AccessToken.getCurrentAccessToken() != null) {
-                            handleFacebookAccessToken(loginResult.getAccessToken());
-                        }
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        Log.d(TAG, "facebook:onCancel");
-                        progressBar.setVisibility(View.INVISIBLE);
-                        mFSignUpButton.setEnabled(true);
-                        mGSignUpButton.setEnabled(true);
-                        mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                        mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
-                    }
-
-                    @Override
-                    public void onError(FacebookException error) {
-                        Log.d(TAG, "facebook:onError", error);
-                        progressBar.setVisibility(View.INVISIBLE);
-                        mFSignUpButton.setEnabled(true);
-                        mGSignUpButton.setEnabled(true);
-                        mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                        mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
-                    }
-                });
-
     }
 
     private void handleFacebookAccessToken(AccessToken accessToken) {
@@ -209,9 +204,12 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()) {
                             Log.d(TAG, "signInWithCredential:success");
-                            boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                            boolean isNew = false;
+                            if(task.getResult() != null) {
+                                isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                            }
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Crashlytics.log(Log.DEBUG, TAG, "New facebook user: " + user.getUid());
+                            Crashlytics.log(Log.DEBUG, TAG, "New facebook user: " + mAuth.getCurrentUser());
                             updateUI(user, "facebook", isNew);
                         } else {
                             Crashlytics.log("Facebook login fails");
@@ -222,10 +220,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             mFSignUpButton.setEnabled(true);
                             mGSignUpButton.setEnabled(true);
                             progressBar.setVisibility(View.INVISIBLE);
-                            mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                            mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
-                            mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                            mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                         }
                     }
                 });
@@ -235,8 +229,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         progressBar.setVisibility(View.VISIBLE);
         mGSignUpButton.setEnabled(false);
         mFSignUpButton.setEnabled(false);
-        mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home_onclick);
-        mGSignUpButton.setTextColor(R.drawable.button_text_color_home_onclick);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -254,8 +246,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
             }catch (Exception e) {
                 mFSignUpButton.setEnabled(true);
                 mGSignUpButton.setEnabled(true);
-                mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                 Log.w(TAG, "Google Sign in failed: signInResult:failed code = " + e);
                 progressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(this, "Please update google play services", Toast.LENGTH_LONG).show();
@@ -278,9 +268,12 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
-                            boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                            boolean isNew = false;
+                            if(task.getResult() != null) {
+                                isNew = task.getResult().getAdditionalUserInfo().isNewUser();
+                            }
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Crashlytics.log(Log.DEBUG, TAG, "New google user: " + user.getUid());
+                            Crashlytics.log(Log.DEBUG, TAG, "New google user: " + mAuth.getCurrentUser());
                             updateUI(user, "google", isNew);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -290,10 +283,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             mFSignUpButton.setEnabled(true);
                             mGSignUpButton.setEnabled(true);
                             progressBar.setVisibility(View.INVISIBLE);
-                            mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                            mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
-                            mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-                            mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
                         }
                     }
                 });
@@ -312,7 +301,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                 intent.putExtra("source",source);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
-            } else if(user.getUid() != null){
+            } else if(!user.getUid().isEmpty()){
 
                 CollectionReference usersReference = db.collection("users");
                 Query query = usersReference.whereEqualTo("id", user.getUid());
@@ -350,10 +339,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
             mGSignUpButton.setEnabled(true);
             progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(this, "Authentication failed", Toast.LENGTH_LONG).show();
-            mGSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-            mGSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
-            mFSignUpButton.setBackgroundResource(R.drawable.rounded_button_home);
-            mFSignUpButton.setTextColor(getResources().getColor(R.color.colorTransparentWhite));
         }
 
     }

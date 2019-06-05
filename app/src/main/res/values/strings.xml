@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">PRATITI</string>
-    <string name="login_google">GOOGLE LOGIN</string>
+    <string name="login_google">Sign in with Google</string>
     <string name="login_facebook">FACEBOOK LOGIN</string>
-    <string name="signup_google">GOOGLE SIGNUP</string>
+    <string name="signup_google">Sign up with Google</string>
     <string name="signup_facebook">FACEBOOK SIGNUP</string>
     <string name="login">LOGIN</string>
     <string name="username">User name</string>

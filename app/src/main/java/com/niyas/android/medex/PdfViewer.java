@@ -54,7 +54,6 @@ public class PdfViewer extends AppCompatActivity {
 //        this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         setContentView(R.layout.activity_pdf_viewer);
 
-        initAdView();
         Intent intent = getIntent();
         File file = (File) intent.getSerializableExtra("file");
         String url = (String) intent.getStringExtra("url");
@@ -136,26 +135,12 @@ public class PdfViewer extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(onStop) {
             Log.d(TAG, "taskroot entered");
             Intent intent = new Intent(this, HomeActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-        } else {
-            super.onBackPressed();
-        }
 
         //super.onBackPressed();
-    }
-
-    /* Initializing AdView */
-    private void initAdView() {
-
-        MobileAds.initialize(this, "ca-app-pub-5476381757988116~3744426550");
-        AdView mAdview = findViewById(R.id.adViewPdf);
-        AdRequest adRequest = new AdRequest.Builder()
-                .build();
-        mAdview.loadAd(adRequest);
     }
 
 /*
