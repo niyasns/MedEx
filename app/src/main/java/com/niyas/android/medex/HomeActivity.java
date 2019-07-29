@@ -428,8 +428,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         finish();
         Intent intent = new Intent(HomeActivity.this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        finishAffinity();
         startActivity(intent);
+        finish();
     }
     /* Method fot changing fragement according to menu click */
     private void changeFragment(final Fragment targetFragment) {
