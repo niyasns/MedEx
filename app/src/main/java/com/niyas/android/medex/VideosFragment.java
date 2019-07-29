@@ -4,6 +4,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -352,7 +353,7 @@ public class VideosFragment extends android.support.v4.app.Fragment {
 
         no_data = new TextView(parentActivity);
         no_data.setText("No files found");
-        no_data.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
+        no_data.setTextColor(ContextCompat.getColor(parentActivity, R.color.colorTransparentWhite));
         no_data.setTypeface(raleway_regular);
         no_data.setTextSize(24);
         no_data.setGravity(Gravity.CENTER);

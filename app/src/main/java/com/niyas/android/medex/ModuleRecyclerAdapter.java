@@ -205,6 +205,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         if(file.exists()) {
             progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(context, "Opening file from downloads", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, position + "");
             openFile(file, moduleArrayList.get(position).getUrl());
         } else if(downloads.size() > 0) {
             progressBar.setVisibility(View.INVISIBLE);
@@ -249,6 +250,7 @@ public class ModuleRecyclerAdapter extends RecyclerView.Adapter<ModuleViewHolder
         }
         Log.d(TAG, mimeType + " " + extension);
         Log.i(TAG, String.valueOf(path));
+        Log.i(TAG, String.valueOf(url));
         if (extension.equals(".png") || extension.equals(".jpg") || extension.equals(".jpeg")){
             //OpenIntent.setDataAndType(fileURI, "image/" + mimeType);
             Intent intent = new Intent(context, ImageViewer.class);

@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -441,27 +442,27 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
 
     private void showWrongAnswer() {
         if(userAnswer != null) {
-            userAnswer.setTextColor(this.getResources().getColor(R.color.colorRed));
+            userAnswer.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorRed));
             userAnswer.setBackgroundResource(R.drawable.rounded_button_wrong);
         }
         userAnswer = null;
     }
 
     private void showCorrectAnswer() {
-        userAnswer.setTextColor(this.getResources().getColor(R.color.colorGreen));
+        userAnswer.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorGreen));
         userAnswer.setBackgroundResource(R.drawable.rounded_button_correct);
         userAnswer = null;
     }
 
     private void showCorrectAnswer(String answer) {
         if(option_1.getText().equals(answer)) {
-            option_1.setTextColor(this.getResources().getColor(R.color.colorGreen));
+            option_1.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorGreen));
             option_1.setBackgroundResource(R.drawable.rounded_button_correct);
         } else if(option_2.getText().equals(answer)) {
-            option_2.setTextColor(this.getResources().getColor(R.color.colorGreen));
+            option_2.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorGreen));
             option_2.setBackgroundResource(R.drawable.rounded_button_correct);
         } else if(option_3.getText().equals(answer)) {
-            option_3.setTextColor(this.getResources().getColor(R.color.colorGreen));
+            option_3.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorGreen));
             option_3.setBackgroundResource(R.drawable.rounded_button_correct);
         }
     }
@@ -560,18 +561,18 @@ public class QuizFragment extends android.support.v4.app.Fragment implements Vie
      * @param button selected button
      */
     public void changeClickedButton(Button button) {
-        button.setTextColor(this.getResources().getColor(R.color.colorTransparentWhite));
+        button.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorTransparentWhite));
         button.setBackgroundResource(R.drawable.selected_option);
     }
     /* Resetting all button to default state */
     public void  resetButton() {
-        option_1.setTextColor(this.getResources().getColor(R.color.colorSecondary));
+        option_1.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorSecondary));
         option_1.setBackgroundResource(R.drawable.rounded_button);
 
-        option_2.setTextColor(this.getResources().getColor(R.color.colorSecondary));
+        option_2.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorSecondary));
         option_2.setBackgroundResource(R.drawable.rounded_button);
 
-        option_3.setTextColor(this.getResources().getColor(R.color.colorSecondary));
+        option_3.setTextColor(ContextCompat.getColor(this.getContext(), R.color.colorSecondary));
         option_3.setBackgroundResource(R.drawable.rounded_button);
     }
     /* Enable all buttons for next question */

@@ -4,6 +4,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -175,14 +176,14 @@ public class CountDownFragment extends android.support.v4.app.Fragment {
         no_data = parentView.findViewById(R.id.status);
 
         no_data.setText("No Data found");
-        no_data.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
+        no_data.setTextColor(ContextCompat.getColor(parentActivity, R.color.colorTransparentWhite));
         no_data.setTypeface(raleway_regular);
         no_data.setTextSize(24);
         no_data.setGravity(Gravity.CENTER);
 
 
         no_quiz.setText("Check after some time");
-        no_quiz.setTextColor(parentActivity.getResources().getColor(R.color.colorTransparentWhite));
+        no_quiz.setTextColor(ContextCompat.getColor(parentActivity, R.color.colorTransparentWhite));
         no_quiz.setTypeface(raleway_regular);
         no_quiz.setTextSize(24);
         no_quiz.setGravity(Gravity.CENTER);
